@@ -1,0 +1,24 @@
+machine:
+  environment:
+    AUDIODEV: null
+
+dependencies:
+  pre:
+    - sudo add-apt-repository ppa:eyecreate/haxe -y
+    - sudo apt-get update
+    - sudo apt-get install haxe -y --force-yes
+    - sudo apt-get install g++-multilib gcc-multilib
+    - sudo apt-get install mesa-common-dev libgl1-mesa-dev libglu1-mesa-dev -y
+    - mkdir ~/haxelib
+    - haxelib setup ~/haxelib
+    - haxelib install hxcpp
+    - haxelib install mcover
+    - haxelib install hamcrest
+    - haxelib install openfl
+    - haxelib install lime
+    - haxelib dev extension-networking .
+
+test:
+  override:
+    - haxelib run munit test
+    - haxelib run openfl build examples/basic-example/project.xml linux
