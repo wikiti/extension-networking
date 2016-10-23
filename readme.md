@@ -2,7 +2,8 @@
 
 # OpenFL Networking Library
 
-<div style="text-align: center;">![](dev/logo.png)</div>
+![extension-networking logo](/dev/logo.png)
+
 
 ## Description
 
@@ -10,7 +11,7 @@
 
 The structure followed by this library is quite classic, following this diagram:
 
-<div style="text-align: center;">![](dev/diagram.png)</div>
+![](/dev/diagram.png)
 
 Basically, a network can have multiple sessions. Each session will consist of one (intermediate) server and multiple clients. Just create some sessions, and some events, and you are ready to go!
 
@@ -186,36 +187,40 @@ client.uuid;
 client.server.uuid;
 ````
 
+If you want to use your own identifiers (for example, loading them from a file), see the *Parameters for sessions* section.
+
 ### Parameters for sessions
 
 The following parameters are accepted for session registration. If a parameter hast a default value, then it can be omitted.
 
 #### Server parameters
 
-| Parameter name | Description | Default value |
-| -------------- | ----------- | ------------- |
-| ip | Server ip (host) to bind. | 127.0.0.1 |
-| port | Server TCP port to bind. | 9696 |
-| max_connections | Max connections allowed at the same time. | 24 |
+| Parameter name | Description | Type | Default value |
+| -------------- | ----------- | ---- | ------------- |
+| ip | Server ip (host) to bind. | String | 127.0.0.1 |
+| port | Server TCP port to bind. | PortType (Int) | 9696 |
+| max_connections | Max connections allowed at the same time. | Int | 24 |
+| uuid | Unique identifier (server). | String | random uuid string |
 
 Example:
 
 ````hx
-var server = Network.registerSession(NetworkMode.SERVER, { ip: '0.0.0.0', port: 7777, max_connections: 50 });
+var server = Network.registerSession(NetworkMode.SERVER, { ip: '0.0.0.0', port: 7777, max_connections: 50, uuid: 'server_id' });
 ````
 
 
 #### Client parameters
 
-| Parameter name | Description | Default value |
-| -------------- | ----------- | ------------- |
-| ip | Server ip to connect into. | 127.0.0.1 |
-| port | Server TCP port to connect into. | 9696 |
+| Parameter name | Description | Type | Default value |
+| -------------- | ----------- | ---- | ------------- |
+| ip | Server ip to connect into. | String | 127.0.0.1 |
+| port | Server TCP port to connect into. | PortType (Int) | 9696 |
+| uuid | Unique identifier (client). | String | random uuid string |
 
 Example:
 
 ````hx
-var client = Network.registerSession(NetworkMode.CLIENT, { ip: '127.0.0.1', port: 7777 });
+var client = Network.registerSession(NetworkMode.CLIENT, { ip: '127.0.0.1', port: 7777, uuid: 'client_id' });
 ````
 
 ### Events
@@ -229,8 +234,8 @@ As we stated before, this library is based on events. The following events are a
 | CONNECTED | New client connected. | Client connected to the server (after INIT_SUCCESS). |
 | DISCONNECTED | Client disconnected (due to an error or voluntarily). | Disconnected from the server (due to an error or voluntarily). |
 | CLOSED | Session closed (called on `session.stop()` or `Network.destroySession(session)`). | Session closed (called on `session.stop()` or `Network.destroySession(session)`). |
-| MESSAGE_SENT | Message sent to a client. | Message sent to the server. |
 | MESSAGE_RECEIVED | Message recieved from a client. | Message recieved from the server. |
+| MESSAGE_SENT | Message sent to a client. | Message sent to the server. |
 | MESSAGE_SENT_FAILED | An error ocurred while sending a message to a specific client. | An error ocurred while sending a message to the server. |
 | MESSAGE_BROADCAST | Send message to all clients. | - |
 | MESSAGE_BROADCAST_FAILED | Something went wrong while sending a broadcast message. | - |
