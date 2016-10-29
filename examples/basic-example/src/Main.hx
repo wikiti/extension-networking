@@ -29,10 +29,10 @@ class Main extends Sprite {
   /**
    * Create the main object container.
    */
-	public function new() {
-		super();
+  public function new() {
+    super();
     setupMenuButtons();
-	}
+  }
 
   /**
    * Setup menu buttons (client and server). This method only adds buttons to the
