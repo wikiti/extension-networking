@@ -3,6 +3,10 @@ machine:
     AUDIODEV: null
 
 dependencies:
+  cache_directories:
+    - test/build
+    - examples/basic-example/bin
+
   pre:
     - sudo add-apt-repository ppa:eyecreate/haxe -y
     - sudo apt-get update
@@ -22,3 +26,4 @@ test:
   override:
     - haxelib run munit test
     - haxelib run openfl build examples/basic-example/project.xml linux
+    - haxelib run openfl build examples/basic-example/project.xml neko
