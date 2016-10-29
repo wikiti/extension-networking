@@ -1,7 +1,5 @@
 package networking.sessions.server;
 
-import cpp.vm.Mutex;
-import cpp.vm.Thread;
 import networking.utils.NetworkEvent;
 import networking.utils.NetworkLogger;
 
@@ -11,6 +9,14 @@ import networking.sessions.items.ServerObject;
 import networking.utils.*;
 
 import sys.net.Socket;
+
+#if neko
+import neko.vm.Thread;
+import neko.vm.Mutex;
+#elseif cpp
+import cpp.vm.Mutex;
+import cpp.vm.Thread;
+#end
 
 /** Port type (integer). **/
 typedef PortType = Int;
@@ -81,8 +87,8 @@ class Server {
       info = new ServerObject(_session, _uuid, this);
       info.initializeSocket(ip, port);
 		}
-    catch (z: Dynamic) {
-      _session.triggerEvent(NetworkEvent.INIT_FAILURE, { server: this, message: 'Could not bind to $ip:$port. Ensure that no server is running on that port.\n' } );
+    catch (e: Dynamic) {
+      _session.triggerEvent(NetworkEvent.INIT_FAILURE, { server: this, message: 'Could not bind to $ip:$port. Ensure that no server is running on that port. Reason: $e' } );
 			return;
 		}
 

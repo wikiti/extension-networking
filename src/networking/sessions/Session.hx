@@ -90,8 +90,8 @@ class Session extends EventDispatcher {
     params = params != null ? params : { };
 
     switch(mode) {
-      case SERVER: network_item = new Server(this, params.uuid, params.ip, params.port, params.max_connections);
-      case CLIENT: network_item = new Client(this, params.uuid, params.ip, params.port);
+      case SERVER: network_item = new Server(this, params.uuid, params.ip, Std.parseInt(params.port), params.max_connections);
+      case CLIENT: network_item = new Client(this, params.uuid, params.ip, Std.parseInt(params.port));
     }
 
     return this;

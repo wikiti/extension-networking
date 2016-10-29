@@ -101,7 +101,9 @@ class ClientObject {
   public function destroySocket(): Bool {
     if (socket == null) return false;
 
+    #if !neko
     socket.shutdown(true, true);
+    #end
     socket.close();
     socket = null;
     return true;

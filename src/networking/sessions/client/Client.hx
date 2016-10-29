@@ -1,7 +1,13 @@
 package networking.sessions.client;
 
+#if neko
+import neko.vm.Thread;
+import neko.vm.Mutex;
+#elseif cpp
 import cpp.vm.Mutex;
 import cpp.vm.Thread;
+#end
+
 import networking.utils.NetworkEvent;
 
 import networking.server.*;

@@ -1,3 +1,17 @@
+## Neko
+-main TestMain
+-lib munit
+-lib hamcrest
+-lib openfl
+-lib lime
+-cp src/
+-D test
+
+-cp test/test
+-neko build/neko_test.n
+
+--next
+
 ## CPP
 -main TestMain
 -lib munit

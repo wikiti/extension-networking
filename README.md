@@ -36,7 +36,7 @@ Please, take in mind the following considerations before programming anything:
 
 - Network events are processed on a queue after each OpenFL frame (*ENTER_FRAME* event).
 - Currently, only TCP sockets are supported.
-- Only native (**hxcpp**) targets are supported.
+- Only native **hxcpp** and **neko** targets are currently supported.
 
 ## Usage
 
@@ -329,7 +329,7 @@ $ haxelib run munit test
 
 ## TODO
 
-- Add support for non-native (**hxcpp**) targets.
+- Add support for non-native (**hxcpp** or **neko**) targets, at least, on clients mode.
 - Add more tests related to sockets.
 
 ## Contributors

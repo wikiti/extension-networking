@@ -1,7 +1,12 @@
 package networking.utils;
 
+#if neko
+import neko.vm.Deque;
+import neko.vm.Mutex;
+#elseif cpp
 import cpp.vm.Deque;
 import cpp.vm.Mutex;
+#end
 
 import networking.sessions.Session;
 
