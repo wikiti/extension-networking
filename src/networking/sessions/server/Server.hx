@@ -48,10 +48,10 @@ class Server {
   public static inline var MAX_LISTEN_INCOMING_REQUESTS: Int = 200;
 
   /** Clients connected to the current server. **/
-	public var clients: Clients;
+  public var clients: Clients;
 
   /** Low level information. **/
-	public var info: ServerObject;
+  public var info: ServerObject;
 
   /** Server binded ip. **/
   public var ip(default, null): String;
@@ -78,19 +78,19 @@ class Server {
    * @param port Server port to connect into.
    * @param max_connections Max allowed clients at the same time.
    */
-	public function new(session: Session, uuid: Uuid = DEFAULT_UUID, ip: String = DEFAULT_IP, port: Null<PortType> = DEFAULT_PORT, max_connections: Null<Int> = DEFAULT_MAX_CONNECTIONS) {
+  public function new(session: Session, uuid: Uuid = DEFAULT_UUID, ip: String = DEFAULT_IP, port: Null<PortType> = DEFAULT_PORT, max_connections: Null<Int> = DEFAULT_MAX_CONNECTIONS) {
     _session = session;
     _mutex = new Mutex();
     _uuid = uuid;
 
-		try {
+    try {
       info = new ServerObject(_session, _uuid, this);
       info.initializeSocket(ip, port);
-		}
+    }
     catch (e: Dynamic) {
       _session.triggerEvent(NetworkEvent.INIT_FAILURE, { server: this, message: 'Could not bind to $ip:$port. Ensure that no server is running on that port. Reason: $e' } );
-			return;
-		}
+      return;
+    }
 
     _session.triggerEvent(NetworkEvent.INIT_SUCCESS, { server: this, message: 'Binded to $ip:$port.' });
 
@@ -98,18 +98,18 @@ class Server {
     this.port = port;
     this.max_connections = max_connections;
 
-		clients = [];
+    clients = [];
     _thread_active = true;
-		_thread = Thread.create(threadAccept);
-	}
+    _thread = Thread.create(threadAccept);
+  }
 
-	/**
-	 * Sends given object to all active clients, also known as broadcasting.
+  /**
+   * Sends given object to all active clients, also known as broadcasting.
    * To send messages to a single client, use something like `clients[0].send(...)`.
    *
-	 * @param obj Message to broadcast.
-	 */
-	public function broadcast(obj: Dynamic) {
+   * @param obj Message to broadcast.
+   */
+  public function broadcast(obj: Dynamic) {
     try {
       for (cl in clients) {
         if (!cl.send(obj)) disconnectClient(cl, false);
@@ -119,7 +119,7 @@ class Server {
     catch (e: Dynamic) {
       _session.triggerEvent(NetworkEvent.MESSAGE_BROADCAST_FAILED, { server: this, message: obj });
     }
-	}
+  }
 
   /**
    * Disconnect a given client from the server. This method should not be called manually, but withing Session instances.
@@ -162,9 +162,9 @@ class Server {
     broadcast(obj);
   }
 
-	// Accepts new sockets and spawns new threads for them.
-	private function threadAccept() {
-		while (true) {
+  // Accepts new sockets and spawns new threads for them.
+  private function threadAccept() {
+    while (true) {
       _mutex.acquire();
       if (!_thread_active) break;
       _mutex.release();
@@ -176,21 +176,21 @@ class Server {
       catch(e: Dynamic) {
         NetworkLogger.error(e);
       }
-			if (sk != null) {
+      if (sk != null) {
         var cl = new ClientObject(_session, null, this, sk);
 
         if (!maxClientsReached()) {
-				  Thread.create(getThreadListen(cl));
+          Thread.create(getThreadListen(cl));
         }
         else {
           var message = { verb: '_core.errors.server_full', message: 'Server is full.' };
           cl.send(message);
           _session.triggerEvent(NetworkEvent.SERVER_FULL, { client: cl, message: message });
         }
-			}
-		}
+      }
+    }
     _mutex.release();
-	}
+  }
 
   // Destroy the current session.
   private function cleanup() {
@@ -209,24 +209,24 @@ class Server {
     return clients.length >= max_connections;
   }
 
-	// Creates a new thread function to handle given ClientInfo.
-	private function getThreadListen(cl: ClientObject) {
-		return function() {
-			clients.push(cl);
+  // Creates a new thread function to handle given ClientInfo.
+  private function getThreadListen(cl: ClientObject) {
+    return function() {
+      clients.push(cl);
       cl.load();
 
       _session.triggerEvent(NetworkEvent.CONNECTED, { server: this, client: cl } );
 
-			while (cl.active) {
-				try {
-					cl.read();
-				}
+      while (cl.active) {
+        try {
+          cl.read();
+        }
         catch(z: Dynamic) {
-					break;
-				}
-			}
+          break;
+        }
+      }
 
       disconnectClient(cl);
-		}
-	}
+    }
+  }
 }
