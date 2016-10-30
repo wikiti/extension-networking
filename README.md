@@ -331,6 +331,7 @@ $ haxelib run munit test
 
 - Add support for non-native (**hxcpp** or **neko**) targets, at least, on client mode.
 - Add more unit tests related to sockets.
+- Create class wrappers for `Socket`, `Mutext`, `Deque` and `Thread`.
 
 ## Contributors
 

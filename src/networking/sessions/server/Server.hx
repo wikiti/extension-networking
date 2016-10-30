@@ -8,15 +8,7 @@ import networking.sessions.items.ClientObject;
 import networking.sessions.items.ServerObject;
 import networking.utils.*;
 
-import sys.net.Socket;
-
-#if neko
-import neko.vm.Thread;
-import neko.vm.Mutex;
-#elseif cpp
-import cpp.vm.Mutex;
-import cpp.vm.Thread;
-#end
+import networking.wrappers.*;
 
 /** Port type (integer). **/
 typedef PortType = Int;
@@ -63,10 +55,9 @@ class Server {
   public var max_connections(default, null): Int;
 
   private var _session: Session;
-  private var _mutex: Mutex;
+  private var _mutex: MutexWrapper;
   private var _uuid: Uuid;
-  private var _thread: Thread;
-  private var _thread_active: Bool = true;
+  private var _thread: ThreadWrapper;
 
   /**
    * Create a new server session that will bind the given ip and port.
@@ -80,7 +71,7 @@ class Server {
    */
 	public function new(session: Session, uuid: Uuid = DEFAULT_UUID, ip: String = DEFAULT_IP, port: Null<PortType> = DEFAULT_PORT, max_connections: Null<Int> = DEFAULT_MAX_CONNECTIONS) {
     _session = session;
-    _mutex = new Mutex();
+    _mutex = new MutexWrapper();
     _uuid = uuid;
 
 		try {
@@ -99,8 +90,7 @@ class Server {
     this.max_connections = max_connections;
 
 		clients = [];
-    _thread_active = true;
-		_thread = Thread.create(threadAccept);
+		_thread = new ThreadWrapper(null, threadLoop, null);
 	}
 
 	/**
@@ -147,8 +137,8 @@ class Server {
    * Disconnect all clients, and close the current session.
    */
   public function stop() {
+    _thread.stop();
     _mutex.acquire();
-    _thread_active = false;
     cleanup();
     _mutex.release();
     _session.triggerEvent(NetworkEvent.CLOSED, { server: this, message: 'Session closed.' } );
@@ -163,33 +153,32 @@ class Server {
   }
 
 	// Accepts new sockets and spawns new threads for them.
-	private function threadAccept() {
-		while (true) {
-      _mutex.acquire();
-      if (!_thread_active) break;
-      _mutex.release();
+	private function threadLoop(): Bool {
+    var sk: SocketWrapper = null;
+    try {
+      trace('Accepting socket');
+      sk = info.socket.accept();
+      trace('Accepted!');
+      trace(sk);
+    }
+    catch (e: Dynamic) {
+      trace('Crash!');
+      NetworkLogger.error(e);
+    }
+    if (sk != null) {
+      var cl = new ClientObject(_session, null, this, sk);
 
-      var sk: Socket = null;
-      try {
-        sk = info.socket.accept();
+      if (!maxClientsReached()) {
+        new ThreadWrapper(getThreadCreate(cl), getThreadListen(cl), getThreadDisconnect(cl));
       }
-      catch(e: Dynamic) {
-        NetworkLogger.error(e);
+      else {
+        var message = { verb: '_core.errors.server_full', message: 'Server is full.' };
+        cl.send(message);
+        _session.triggerEvent(NetworkEvent.SERVER_FULL, { client: cl, message: message });
       }
-			if (sk != null) {
-        var cl = new ClientObject(_session, null, this, sk);
+    }
 
-        if (!maxClientsReached()) {
-				  Thread.create(getThreadListen(cl));
-        }
-        else {
-          var message = { verb: '_core.errors.server_full', message: 'Server is full.' };
-          cl.send(message);
-          _session.triggerEvent(NetworkEvent.SERVER_FULL, { client: cl, message: message });
-        }
-			}
-		}
-    _mutex.release();
+    return true;
 	}
 
   // Destroy the current session.
@@ -209,24 +198,37 @@ class Server {
     return clients.length >= max_connections;
   }
 
-	// Creates a new thread function to handle given ClientInfo.
-	private function getThreadListen(cl: ClientObject) {
-		return function() {
+  private function getThreadCreate(cl: ClientObject): Void->Bool {
+    return function() {
+      trace('Create');
 			clients.push(cl);
       cl.load();
-
       _session.triggerEvent(NetworkEvent.CONNECTED, { server: this, client: cl } );
+      return true;
+    };
+  }
 
-			while (cl.active) {
-				try {
-					cl.read();
-				}
-        catch(z: Dynamic) {
-					break;
-				}
-			}
+	// Creates a new thread function to handle given ClientInfo.
+	private function getThreadListen(cl: ClientObject): Void->Bool {
+		return function() {
+      trace('Loop');
+      if(!cl.active) return false;
+      try {
+        cl.read();
+      }
+      catch (z: Dynamic) {
+        NetworkLogger.error(z);
+        //return false;
+      }
 
-      disconnectClient(cl);
-		}
+      return true;
+		};
 	}
+
+  private function getThreadDisconnect(cl: ClientObject): Void->Void {
+    return function() {
+      trace('Close');
+      disconnectClient(cl);
+    };
+  }
 }
