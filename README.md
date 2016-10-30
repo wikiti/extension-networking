@@ -329,8 +329,8 @@ $ haxelib run munit test
 
 ## TODO
 
-- Add support for non-native (**hxcpp** or **neko**) targets, at least, on clients mode.
-- Add more tests related to sockets.
+- Add support for non-native (**hxcpp** or **neko**) targets, at least, on client mode.
+- Add more unit tests related to sockets.
 
 ## Contributors
 

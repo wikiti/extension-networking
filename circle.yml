@@ -8,6 +8,7 @@ dependencies:
     - examples/basic-example/bin
 
   pre:
+    - mkdir -p test/build examples/basic-example/bin
     - sudo add-apt-repository ppa:eyecreate/haxe -y
     - sudo apt-get update
     - sudo apt-get install haxe -y --force-yes
