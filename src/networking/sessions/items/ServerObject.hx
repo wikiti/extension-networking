@@ -21,17 +21,17 @@ class ServerObject extends ClientObject {
    * @param sv Server reference.
    */
   public function new(session: Session, uuid: Uuid, sv: Server) {
-		super(session, uuid, sv, null);
+    super(session, uuid, sv, null);
     generateUuid();
-	}
+  }
 
   /**
    * String representation of the server object.
    * @return Returns the string representation of the server object. For example: "server_uuid (local)"
    */
-	override public function toString(): String {
-		return '$uuid (local)';
-	}
+  override public function toString(): String {
+    return '$uuid (local)';
+  }
 
   /**
    * Send a message. Not implemented on server mode. This task is delegated to the `Server` class.
@@ -39,10 +39,10 @@ class ServerObject extends ClientObject {
    * @param msg Message content.
    * @return Status flag.
    */
-	override public function send(msg: Dynamic): Bool {
+  override public function send(msg: Dynamic): Bool {
     throw 'Method not implemented';
     return false;
-	}
+  }
 
   /**
    * Initialize the server socket, binding to a given ip and port.
@@ -55,8 +55,8 @@ class ServerObject extends ClientObject {
     if (socket != null) return false;
 
     socket = new SocketWrapper();
-		socket.bind(ip, port);
-		socket.listen(Server.MAX_LISTEN_INCOMING_REQUESTS);
+    socket.bind(ip, port);
+    socket.listen(Server.MAX_LISTEN_INCOMING_REQUESTS);
 
     return true;
   }

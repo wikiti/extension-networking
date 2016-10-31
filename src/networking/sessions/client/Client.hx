@@ -132,13 +132,8 @@ class Client {
 
   private function disconnect() {
     _mutex.acquire();
-    try {
-      info.destroySocket();
-      _thread.stop();
-    }
-    catch (e:Dynamic) {
-      throw e;
-    }
+    info.destroySocket();
+    if(_thread != null) _thread.stop();
     _mutex.release();
   }
 }

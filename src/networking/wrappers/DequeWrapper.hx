@@ -16,14 +16,14 @@ import cpp.vm.Deque;
   private var _deque: Deque<T>;
   #else
   private var _array: Array<T>;
-  private var _mutex: MutexWrapper
+  private var _mutex: MutexWrapper;
   #end
 
   public function new() {
     #if (neko || cpp)
     _deque = new Deque<T>();
     #else
-    _mutex = MutexWrapper();
+    _mutex = new MutexWrapper();
     _array = new Array<T>();
     #end
   }

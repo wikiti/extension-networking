@@ -35,7 +35,6 @@ class MutexWrapper {
     #if (neko || cpp)
     _mutex.release();
     #else
-    while (_active) {};
     _active = false;
     #end
   }

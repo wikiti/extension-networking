@@ -20,13 +20,13 @@ typedef Uuid = String;
  */
 class ClientObject {
   /** Networking socket. **/
-	public var socket: SocketWrapper;
+  public var socket: SocketWrapper;
 
   /** Server related object. Can be null. **/
-	public var server: Server;
+  public var server: Server;
 
   /** Boolean flag to check if the client object is active. **/
-	public var active(get, null): Bool;
+  public var active(get, null): Bool;
 
   /** Client uuid. **/
   public var uuid(default, null): Uuid;
@@ -45,27 +45,27 @@ class ClientObject {
    * @param sv Server reference.
    * @param skt Socket reference. Optional.
    */
-	public function new(session: Session, uuid: Uuid, sv: Server, skt: SocketWrapper) {
-		this.server = sv;
-		this.socket = skt;
+  public function new(session: Session, uuid: Uuid, sv: Server, skt: SocketWrapper) {
+    this.server = sv;
+    this.socket = skt;
     this.uuid = uuid;
 
     _peer_str = '?:?';
     _session = session;
-	}
+  }
 
   /**
    * Represent the ClientObject as a string.
    * @return String representation of the ClientObject. For example: "client_uuid (127.0.0.1:9696)"
    */
-	public function toString(): String {
+  public function toString(): String {
     try {
       return '$uuid ($_peer_str)';
     }
     catch (e: Dynamic) {
       return '$uuid (?:?)';
     }
-	}
+  }
 
   /**
    * Update the ClientObject's information.
@@ -124,23 +124,23 @@ class ClientObject {
    * @param msg Object to send to it.
    * @return true if the message was sent successfully to the server, false otherwise.
    */
-	public function send(msg: Dynamic): Bool {
-		try {
+  public function send(msg: Dynamic): Bool {
+    try {
       if (socket == null) throw 'Socket is not initialized.';
 
       var server_info: ServerObject = server != null ? server.info : null;
       var raw_message: Dynamic = NetworkMessage.createRaw(server_info, this, msg);
 
-			socket.write(NetworkMessage.serialize(raw_message) + '\n');
+      socket.write(NetworkMessage.serialize(raw_message) + '\n');
       _session.triggerEvent(NetworkEvent.MESSAGE_SENT, { obj: this, message: raw_message });
-		}
+    }
     catch (e: Dynamic) {
       NetworkLogger.error(e);
-			active = false;
+      active = false;
       return false;
-		}
+    }
     return true;
-	}
+  }
 
   /**
    * Read a message from the current socket buffer. Pending messages will be handled on the events queue.

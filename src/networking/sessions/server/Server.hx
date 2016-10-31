@@ -40,10 +40,10 @@ class Server {
   public static inline var MAX_LISTEN_INCOMING_REQUESTS: Int = 200;
 
   /** Clients connected to the current server. **/
-	public var clients: Clients;
+  public var clients: Clients;
 
   /** Low level information. **/
-	public var info: ServerObject;
+  public var info: ServerObject;
 
   /** Server binded ip. **/
   public var ip(default, null): String;
@@ -69,19 +69,23 @@ class Server {
    * @param port Server port to connect into.
    * @param max_connections Max allowed clients at the same time.
    */
-	public function new(session: Session, uuid: Uuid = DEFAULT_UUID, ip: String = DEFAULT_IP, port: Null<PortType> = DEFAULT_PORT, max_connections: Null<Int> = DEFAULT_MAX_CONNECTIONS) {
+  public function new(session: Session, uuid: Uuid = DEFAULT_UUID, ip: String = DEFAULT_IP, port: Null<PortType> = DEFAULT_PORT, max_connections: Null<Int> = DEFAULT_MAX_CONNECTIONS) {
+    #if !(cpp || neko)
+    throw 'Server mode is not available in non-native targets.';
+    #end
+
     _session = session;
     _mutex = new MutexWrapper();
     _uuid = uuid;
 
-		try {
+    try {
       info = new ServerObject(_session, _uuid, this);
       info.initializeSocket(ip, port);
-		}
+    }
     catch (e: Dynamic) {
       _session.triggerEvent(NetworkEvent.INIT_FAILURE, { server: this, message: 'Could not bind to $ip:$port. Ensure that no server is running on that port. Reason: $e' } );
-			return;
-		}
+      return;
+    }
 
     _session.triggerEvent(NetworkEvent.INIT_SUCCESS, { server: this, message: 'Binded to $ip:$port.' });
 
@@ -89,17 +93,17 @@ class Server {
     this.port = port;
     this.max_connections = max_connections;
 
-		clients = [];
-		_thread = new ThreadWrapper(null, threadLoop, null);
-	}
+    clients = [];
+    _thread = new ThreadWrapper(null, threadLoop, null);
+  }
 
-	/**
-	 * Sends given object to all active clients, also known as broadcasting.
+  /**
+   * Sends given object to all active clients, also known as broadcasting.
    * To send messages to a single client, use something like `clients[0].send(...)`.
    *
-	 * @param obj Message to broadcast.
-	 */
-	public function broadcast(obj: Dynamic) {
+   * @param obj Message to broadcast.
+   */
+  public function broadcast(obj: Dynamic) {
     try {
       for (cl in clients) {
         if (!cl.send(obj)) disconnectClient(cl, false);
@@ -109,7 +113,7 @@ class Server {
     catch (e: Dynamic) {
       _session.triggerEvent(NetworkEvent.MESSAGE_BROADCAST_FAILED, { server: this, message: obj });
     }
-	}
+  }
 
   /**
    * Disconnect a given client from the server. This method should not be called manually, but withing Session instances.
@@ -137,11 +141,14 @@ class Server {
    * Disconnect all clients, and close the current session.
    */
   public function stop() {
-    _thread.stop();
+    if (_thread != null) _thread.stop();
     _mutex.acquire();
     cleanup();
     _mutex.release();
     _session.triggerEvent(NetworkEvent.CLOSED, { server: this, message: 'Session closed.' } );
+
+    _thread = null;
+    _mutex = null;
   }
 
   /**
@@ -152,17 +159,13 @@ class Server {
     broadcast(obj);
   }
 
-	// Accepts new sockets and spawns new threads for them.
-	private function threadLoop(): Bool {
+  // Accepts new sockets and spawns new threads for them.
+  private function threadLoop(): Bool {
     var sk: SocketWrapper = null;
     try {
-      trace('Accepting socket');
       sk = info.socket.accept();
-      trace('Accepted!');
-      trace(sk);
     }
     catch (e: Dynamic) {
-      trace('Crash!');
       NetworkLogger.error(e);
     }
     if (sk != null) {
@@ -179,7 +182,7 @@ class Server {
     }
 
     return true;
-	}
+  }
 
   // Destroy the current session.
   private function cleanup() {
@@ -200,34 +203,30 @@ class Server {
 
   private function getThreadCreate(cl: ClientObject): Void->Bool {
     return function() {
-      trace('Create');
-			clients.push(cl);
+      clients.push(cl);
       cl.load();
       _session.triggerEvent(NetworkEvent.CONNECTED, { server: this, client: cl } );
       return true;
     };
   }
 
-	// Creates a new thread function to handle given ClientInfo.
-	private function getThreadListen(cl: ClientObject): Void->Bool {
-		return function() {
-      trace('Loop');
+  // Creates a new thread function to handle given ClientInfo.
+  private function getThreadListen(cl: ClientObject): Void->Bool {
+    return function() {
       if(!cl.active) return false;
       try {
         cl.read();
       }
       catch (z: Dynamic) {
-        NetworkLogger.error(z);
-        //return false;
+        return false;
       }
 
       return true;
-		};
-	}
+    };
+  }
 
   private function getThreadDisconnect(cl: ClientObject): Void->Void {
     return function() {
-      trace('Close');
       disconnectClient(cl);
     };
   }

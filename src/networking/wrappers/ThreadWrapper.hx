@@ -4,6 +4,8 @@ package networking.wrappers;
 import neko.vm.Thread;
 #elseif cpp
 import cpp.vm.Thread;
+#else
+import lime.system.ThreadPool;
 #end
 
 /**
@@ -17,6 +19,10 @@ class ThreadWrapper {
   private var _on_loop: Void->Bool;
   private var _on_stop: Void->Void;
 
+  #if !(neko || cpp)
+  private var _thread_pool: ThreadPool;
+  #end
+
   public function new(on_start: Void->Bool, on_loop: Void->Bool, on_stop: Void->Void) {
     _on_start = on_start;
     _on_loop = on_loop;
@@ -27,7 +33,9 @@ class ThreadWrapper {
     #if (neko || cpp)
     Thread.create(handler);
     #else
-    // TODO: Implement me for OpenFL!
+    _thread_pool = new ThreadPool();
+    _thread_pool.doWork.add(handler);
+    _thread_pool.queue();
     #end
   }
 
@@ -37,7 +45,12 @@ class ThreadWrapper {
     _mutex.release();
   }
 
+  #if (neko || cpp)
   private function handler() {
+  #else
+  private function handler(test: Dynamic = null) {
+  #end
+
     var success: Bool = true;
     if (_on_start != null) success = _on_start();
     if (!success) return;

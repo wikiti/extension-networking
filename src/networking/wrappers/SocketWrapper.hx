@@ -18,7 +18,7 @@ class SocketWrapper {
   public var _socket: Socket;
 
   public function new(raw_socket: Dynamic = null) {
-    if (raw_socket)
+    if (raw_socket != null)
       _socket = raw_socket;
     else
       _socket = new Socket();
@@ -33,7 +33,7 @@ class SocketWrapper {
   }
 
   public function close() {
-    #if !neko
+    #if (!neko && cpp)
     _socket.shutdown(true, true);
     #end
     _socket.close();
@@ -48,7 +48,7 @@ class SocketWrapper {
       return null;
 
     #else
-    throw 'Method not available in non-native targets.'
+    throw 'Method not available in non-native targets.';
     #end
   }
 
@@ -56,7 +56,7 @@ class SocketWrapper {
     #if (neko || cpp)
     _socket.listen(connections);
     #else
-    throw 'Method not available in non-native targets.'
+    throw 'Method not available in non-native targets.';
     #end
   }
 
@@ -64,20 +64,29 @@ class SocketWrapper {
     #if (neko || cpp)
     _socket.bind(new Host(host), port);
     #else
-    throw 'Method not available in non-native targets.'
+    throw 'Method not available in non-native targets.';
     #end
   }
 
   public function read(): String {
     #if (neko || cpp)
-    return _socket.input.readLine();
+    var len = _socket.input.readUInt16();
+    return _socket.input.readString(len);
+    //return _socket.input.readLine();
     #else
     return _socket.readUTF();
     #end
   }
 
   public function write(data: String) {
+    //_socket.output.writeString(data);
+
+    #if (neko || cpp)
+    _socket.output.writeUInt16(data.length);
     _socket.output.writeString(data);
+    #else
+    _socket.readUTF();
+    #end
   }
 
   public function toString(): String {
