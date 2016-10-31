@@ -8,9 +8,7 @@ import networking.utils.NetworkEvent;
 import networking.utils.NetworkLogger;
 import networking.utils.NetworkMessage;
 import networking.utils.Utils;
-
-import sys.net.Host;
-import sys.net.Socket;
+import networking.wrappers.SocketWrapper;
 
 /** Uuid type (string). */
 typedef Uuid = String;
@@ -22,7 +20,7 @@ typedef Uuid = String;
  */
 class ClientObject {
   /** Networking socket. **/
-  public var socket: Socket;
+  public var socket: SocketWrapper;
 
   /** Server related object. Can be null. **/
   public var server: Server;
@@ -47,7 +45,7 @@ class ClientObject {
    * @param sv Server reference.
    * @param skt Socket reference. Optional.
    */
-  public function new(session: Session, uuid: Uuid, sv: Server, skt: Socket = null) {
+  public function new(session: Session, uuid: Uuid, sv: Server, skt: SocketWrapper) {
     this.server = sv;
     this.socket = skt;
     this.uuid = uuid;
@@ -88,8 +86,8 @@ class ClientObject {
   public function initializeSocket(ip: String, port: PortType): Bool {
     if (socket != null) return false;
 
-    socket = new Socket();
-    socket.connect(new Host(ip), port);
+    socket = new SocketWrapper();
+    socket.connect(ip, port);
     return true;
   }
 
@@ -101,9 +99,6 @@ class ClientObject {
   public function destroySocket(): Bool {
     if (socket == null) return false;
 
-    #if !neko
-    socket.shutdown(true, true);
-    #end
     socket.close();
     socket = null;
     return true;
@@ -114,8 +109,7 @@ class ClientObject {
    */
   public function load() {
     try {
-      var peer = socket.peer();
-      _peer_str = '${peer.host}:${peer.port}';
+      _peer_str = socket.toString();
     }
     catch(e: Dynamic) {
       _peer_str = '?:?';
@@ -137,7 +131,7 @@ class ClientObject {
       var server_info: ServerObject = server != null ? server.info : null;
       var raw_message: Dynamic = NetworkMessage.createRaw(server_info, this, msg);
 
-      socket.output.writeString(NetworkMessage.serialize(raw_message) + '\n');
+      socket.write(NetworkMessage.serialize(raw_message) + '\n');
       _session.triggerEvent(NetworkEvent.MESSAGE_SENT, { obj: this, message: raw_message });
     }
     catch (e: Dynamic) {
@@ -152,7 +146,7 @@ class ClientObject {
    * Read a message from the current socket buffer. Pending messages will be handled on the events queue.
    */
   public function read() {
-    if(active) _session.triggerEvent(NetworkEvent.MESSAGE_RECEIVED, { obj: this, message: NetworkMessage.parse(socket.input.readLine()) });
+    if(active) _session.triggerEvent(NetworkEvent.MESSAGE_RECEIVED, { obj: this, message: NetworkMessage.parse(socket.read()) });
   }
 
   private function generateUuid() {

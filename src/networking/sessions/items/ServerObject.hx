@@ -4,9 +4,8 @@ import networking.sessions.Session;
 import networking.sessions.items.ClientObject;
 import networking.sessions.server.Server;
 import networking.utils.*;
+import networking.wrappers.SocketWrapper;
 
-import sys.net.Host;
-import sys.net.Socket;
 
 /**
  * Low level server info wrapper object.
@@ -30,7 +29,7 @@ class ServerObject extends ClientObject {
    * String representation of the server object.
    * @return Returns the string representation of the server object. For example: "server_uuid (local)"
    */
-  override public function toString():String {
+  override public function toString(): String {
     return '$uuid (local)';
   }
 
@@ -55,9 +54,10 @@ class ServerObject extends ClientObject {
   override public function initializeSocket(ip: String, port: PortType): Bool {
     if (socket != null) return false;
 
-    socket = new Socket();
-    socket.bind(new Host(ip), port);
+    socket = new SocketWrapper();
+    socket.bind(ip, port);
     socket.listen(Server.MAX_LISTEN_INCOMING_REQUESTS);
+
     return true;
   }
 }

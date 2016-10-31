@@ -1,12 +1,7 @@
 package networking.utils;
 
-#if neko
-import neko.vm.Deque;
-import neko.vm.Mutex;
-#elseif cpp
-import cpp.vm.Deque;
-import cpp.vm.Mutex;
-#end
+import networking.wrappers.DequeWrapper;
+import networking.wrappers.MutexWrapper;
 
 import networking.sessions.Session;
 
@@ -16,10 +11,10 @@ import networking.sessions.Session;
  * @author Daniel Herzog
  */
 class NetworkEventsQueue {
-  private var _queue: Deque<NetworkEvent>;
+  private var _queue: DequeWrapper<NetworkEvent>;
+  private var _mutex: MutexWrapper;
   private var _queue_size: Int;
   private var _session: Session;
-  private var _mutex: Mutex;
 
   /**
    * Create a new event queue.
@@ -27,8 +22,8 @@ class NetworkEventsQueue {
    */
   public function new(session: Session) {
     _session = session;
-    _queue = new Deque<NetworkEvent>();
-    _mutex = new Mutex();
+    _queue = new DequeWrapper<NetworkEvent>();
+    _mutex = new MutexWrapper();
     _queue_size = 0;
   }
 
@@ -70,7 +65,7 @@ class NetworkEventsQueue {
    * @return Network event. Null if no events are present on the queue.
    */
   public inline function popEvent(): NetworkEvent {
-    var event = _queue.pop(false);
+    var event = _queue.pop();
     if (event != null) incrementCounterBy( -1);
     return event;
   }

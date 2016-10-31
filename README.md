@@ -34,9 +34,11 @@ $ haxelib install extension-networking
 
 Please, take in mind the following considerations before programming anything:
 
-- Network events are processed on a queue after each OpenFL frame (*ENTER_FRAME* event).
+- Network events are processed on a queue after each OpenFL frame (`ENTER_FRAME` event).
 - Currently, only TCP sockets are supported.
-- Only native **hxcpp** and **neko** targets are currently supported.
+- Server mode is only available in native targets (*hxcpp* and *neko*).
+- Messages are limited to a size of 65535 bytes (16-bit unsigned integer).
+- HTML5 sockets connects via *WebSockets*.
 
 ## Usage
 
@@ -329,7 +331,6 @@ $ haxelib run munit test
 
 ## TODO
 
-- Add support for non-native (**hxcpp** or **neko**) targets, at least, on client mode.
 - Add more unit tests related to sockets.
 
 ## Contributors
