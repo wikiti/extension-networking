@@ -7,8 +7,9 @@ import cpp.vm.Mutex;
 #end
 
 /**
- * ...
- * @author
+ * Mutex wrapper class. It's thread safe.
+ *
+ * @author Daniel Herzog
  */
 class MutexWrapper {
   #if (neko || cpp)
@@ -17,12 +18,18 @@ class MutexWrapper {
   private var _active: Bool = false;
   #end
 
+  /**
+   * Create a new mutex.
+   */
   public function new() {
     #if (neko || cpp)
     _mutex = new Mutex();
     #end
   }
 
+  /**
+   * Lock the mutex.
+   */
   public function acquire() {
     #if (neko || cpp)
     _mutex.acquire();
@@ -31,6 +38,9 @@ class MutexWrapper {
     #end
   }
 
+  /**
+   * Release the mutex.
+   */
   public function release() {
     #if (neko || cpp)
     _mutex.release();

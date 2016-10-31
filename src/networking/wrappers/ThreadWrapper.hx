@@ -9,8 +9,9 @@ import lime.system.ThreadPool;
 #end
 
 /**
- * ...
- * @author
+ * Class wrapper for threads.
+ *
+ * @author Daniel Herzog
  */
 class ThreadWrapper {
   private var _active: Bool;
@@ -19,10 +20,13 @@ class ThreadWrapper {
   private var _on_loop: Void->Bool;
   private var _on_stop: Void->Void;
 
-  #if !(neko || cpp)
-  private var _thread_pool: ThreadPool;
-  #end
-
+  /**
+   * Create a new thread task.
+   *
+   * @param on_start Initialize callback. Will be called at the beginning of the execution. If it returns false, the thread will stop, and on_loop neither on_stop won't be called.
+   * @param on_loop Loop callback. The thread will call this method forever while it returns true. Will stop if it returns false.
+   * @param on_stop Close callback. Called after on_loop has stopped running.
+   */
   public function new(on_start: Void->Bool, on_loop: Void->Bool, on_stop: Void->Void) {
     _on_start = on_start;
     _on_loop = on_loop;
@@ -33,12 +37,17 @@ class ThreadWrapper {
     #if (neko || cpp)
     Thread.create(handler);
     #else
-    _thread_pool = new ThreadPool();
-    _thread_pool.doWork.add(handler);
-    _thread_pool.queue();
+    var thread_pool = new ThreadPool();
+    thread_pool.doWork.add(handler);
+    thread_pool.queue();
     #end
   }
 
+  /**
+   * Stop the thread.
+   *
+   * `on_stop` will be called.
+   */
   public function stop() {
     _mutex.acquire();
     _active = false;
