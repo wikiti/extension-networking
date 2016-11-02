@@ -20,5 +20,5 @@
 	<assets path="assets/img" rename="img" />
 
   <!-- other -->
-  <haxedef name="network_logging_with_backtrace" />
+  <haxedef name="network_logging" />
 </project>
