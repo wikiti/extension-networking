@@ -48,6 +48,11 @@ There is a project example on the [examples](examples) folder. **FEAR NOT!** The
 
 If you don't want to download and execute code, then read the following section.
 
+Examples list:
+
+- [basic-example](examples/basic-example)
+- [tic-tac-toe](examples/tic-tac-toe)
+
 ### Basic usage
 
 First of all, a **server** is an application which allows multiple **clients** to connect to it.

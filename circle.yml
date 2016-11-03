@@ -6,6 +6,7 @@ dependencies:
   cache_directories:
     - test/build
     - examples/basic-example/bin
+    - examples/tic-tac-toe/bin
 
   pre:
     - mkdir -p test/build examples/basic-example/bin
@@ -28,3 +29,5 @@ test:
     - haxelib run munit test
     - haxelib run openfl build examples/basic-example/project.xml linux
     - haxelib run openfl build examples/basic-example/project.xml neko
+    - haxelib run openfl build examples/tic-tac-toe/project.xml linux
+    - haxelib run openfl build examples/tic-tac-toe/project.xml neko
