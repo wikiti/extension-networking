@@ -2,7 +2,7 @@
 
 # OpenFL Networking Library
 
-![extension-networking logo](/dev/logo.png)
+![extension-networking logo](https://raw.githubusercontent.com/wikiti/extension-networking/master/dev/logo.png)
 
 
 ## Description
@@ -11,7 +11,7 @@
 
 The structure followed by this library is quite classic, following this diagram:
 
-![](/dev/diagram.png)
+![](https://raw.githubusercontent.com/wikiti/extension-networking/master/dev/diagram.png)
 
 Basically, a network can have multiple sessions. Each session will consist of one (intermediate) server and multiple clients. Just create some sessions, and some events, and you are ready to go!
 
