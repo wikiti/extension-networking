@@ -186,7 +186,9 @@ server.uuid;
 
 // Server's client uuid
 server.clients[0].uuid;
+````
 
+````hx
 // Client uuid
 client.uuid;
 
@@ -212,7 +214,12 @@ The following parameters are accepted for session registration. If a parameter h
 Example:
 
 ````hx
-var server = Network.registerSession(NetworkMode.SERVER, { ip: '0.0.0.0', port: 7777, max_connections: 50, uuid: 'server_id' });
+var server = Network.registerSession(NetworkMode.SERVER, {
+  ip: '0.0.0.0',
+  port: 7777,
+  max_connections: 50,
+  uuid: 'server_id'
+});
 ````
 
 
@@ -227,7 +234,11 @@ var server = Network.registerSession(NetworkMode.SERVER, { ip: '0.0.0.0', port: 
 Example:
 
 ````hx
-var client = Network.registerSession(NetworkMode.CLIENT, { ip: '127.0.0.1', port: 7777, uuid: 'client_id' });
+var client = Network.registerSession(NetworkMode.CLIENT, {
+  ip: '127.0.0.1',
+  port: 7777,
+  uuid: 'client_id'
+});
 ````
 
 ### Events
@@ -261,9 +272,9 @@ server.addEventListener(NetworkEvent.MESSAGE_RECIEVED, function(e: NetworkEvent)
       event.client.send({ name: e.data.name, age: 2, breed: 'Dalmatian' });
   }
 });
+````
 
-// ...
-
+````hx
 client.send({ verb: 'send_message', str: 'Hello!' });
 client.send({ verb: 'give_me_a_puppy', name: 'Cooper' });
 ````
@@ -272,13 +283,69 @@ Internally, the library uses a few message verbs to handle some cases:
 
 ````yml
 _core:
+  messages:
+    auto_verb: "Flag to determine if the current message is a event-driven shortcut."
   sync:
     update_client_data: "Update client information. Required params: uuid(String)"
   errors:
     server_full: 'The server is full.'
 ````
 
-Core message handling will prevent event propagation: you won't have to handle them.
+Core message handling will prevent event propagation: you won't have to handle them manually.
+
+#### Message verbs (events-driven shortcut)
+
+You can also use the `trigger` and `on` method to automatically manage verbs, so you can separate them easily.
+
+````hx
+server.trigger("say_hi", { to: "world" });
+````
+
+````hx
+client.on("say_hi", function(data: Dynamic) {
+  trace('Hello, ${data.to}!');
+});
+````
+
+Which is a pseudo-equivalent of:
+
+````hx
+server.send({ verb: "say_hi", to: "world" });
+````
+
+````hx
+client.addEventListener(NetworkEvent.MESSAGE_RECIEVED, function(event: NetworkEvent) {
+  if(event.verb == "say_hi") {
+    trace('Hello, ${event.data.to}!');
+  }
+});
+````
+
+The first case is has more semantic meaning, which improves readability.
+
+Note that clients can also *trigger events* into the server:
+
+````hx
+client.trigger("respond", { date: Date.now() });
+````
+
+````hx
+server.on("respond", function(data: Dynamic) {
+  trace('Hello, server! Today's ${data.date}');
+});
+````
+
+If you need to check who the sender is, use an extra parameter called `sender`, which will contain information (uuid and status) of the sender:
+
+````hx
+session.on("verb", function(data: Dynamic, sender: Dynamic) {
+  trace(sender); // { uuid: '...', active: true }
+});
+````
+
+`sender` argument is available for callbacks in both server and client mode.
+
+For more complex situations, we encourage you to use raw event handling (with `addEventListeners`) instead of these quick shortcuts.
 
 ### Session handling
 
