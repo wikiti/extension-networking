@@ -73,7 +73,7 @@ class Session extends EventDispatcher {
    * @param obj Any kind of anonymous object (Dynamic). This will be corresponded to the 'data' field of the network.utils.NetworkMessage.
    */
   public function send(obj: Dynamic) {
-    if (network_item == null) return;
+    if(network_item == null) return;
     if(obj == null) obj = { };
 
     network_item.send(obj);
@@ -140,14 +140,40 @@ class Session extends EventDispatcher {
     _events_queue.dispatchEvent(label, data);
   }
 
+  /**
+   * Triggers a networking event. This method is a shortcut to handle message verbs.
+   * For more information, checkout the README.md file of this project. This method is
+   * available for both server and client. Usage example:
+   *
+   * // Broadcast a message to all clients:
+   * server.trigger('click', { x: 10, y: 30 });
+   * // which is the same that:
+   * server.send({ verb: 'click', x: 10, y: 30 });
+   *
+   * @param verb Verb or action identifier. Can be any string except reserved core verbs (checkout README.md).
+   * @param data A dynamic object which contains the data to send within the networking trigger. Can be null.
+   */
   public function trigger(verb: String, data: Dynamic = null) {
     if (data == null) data = {};
     send({ verb: verb, content: data });
   }
 
+  /**
+   * Register a networking event. This method will be called on the other side of a network after
+   * `trigger()` is called. For more information, checkout the README.md file of this project.
+   * This method is available for both server and client. Usage example:
+   *
+   * // After a server triggers an event, the client will catch it.
+   * client.on('click', function(data: Dynamic) { trace('x: ${data.x}, y: ${data.y}'); });
+   *
+   * @param verb Verb or action identifier. Can be any string except reserved core verbs (checkout README.md).
+   * @param callback A method callback that will be called when the networking event is fired. Can has up to two
+   *                 parameters: a data:Dynamic (required), which will contain the message content, and event:NetworkEvent
+   *                 (optional), which will contain information about the networking event.
+   */
   public function on(verb: String, callback: Dynamic) {
     addEventListener(NetworkEvent.MESSAGE_RECEIVED, function(event: NetworkEvent) {
-      if (event.verb == verb) callback(event.data.content, event.sender);
+      if (event.verb == verb) callback(event.data.content, event);
     });
   }
 

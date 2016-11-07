@@ -149,6 +149,18 @@ class ClientObject {
     if(active) _session.triggerEvent(NetworkEvent.MESSAGE_RECEIVED, { obj: this, message: NetworkMessage.parse(socket.read()) });
   }
 
+  /**
+   * Triggers a networking event. This method has the same behaviour as networking.sessions.Session#trigger,
+   * but will be fired on only one client, instead of being broadcasted to all clients.
+   *
+   * @param verb Verb or action identifier. Can be any string except reserved core verbs (checkout README.md).
+   * @param data A dynamic object which contains the data to send within the networking trigger. Can be null.
+   */
+  public function trigger(verb: String, data: Dynamic = null) {
+    if (data == null) data = {};
+    send({ verb: verb, content: data });
+  }
+
   private function generateUuid() {
     if (uuid != null && uuid != '') return;
     uuid = Utils.guid();
