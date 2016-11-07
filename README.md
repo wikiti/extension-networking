@@ -335,15 +335,16 @@ server.on("respond", function(data: Dynamic) {
 });
 ````
 
-If you need to check who the sender is, use an extra parameter called `sender`, which will contain information (uuid and status) of the sender:
+If you need to check who the sender is, use an extra parameter called `event`, which will contain information about the network event.
 
 ````hx
-session.on("verb", function(data: Dynamic, sender: Dynamic) {
-  trace(sender); // { uuid: '...', active: true }
+session.on("verb", function(data: Dynamic, event: NetworkEvent) {
+  trace(event.data); // { verb: 'verb', value: 'test', etc: 'etc' }
+  trace(event.sender); // { uuid: '...', active: true }
 });
 ````
 
-`sender` argument is available for callbacks in both server and client mode.
+`event` argument is available for callbacks in both server and client mode.
 
 For more complex situations, we encourage you to use raw event handling (with `addEventListeners`) instead of these quick shortcuts.
 

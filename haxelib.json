@@ -4,8 +4,8 @@
   "license": "MIT",
   "tags": ["extension", "openfl", "network", "networking", "net", "tcp", "sockets", "multiplayer"],
   "description": "Library developed for OpenFL to facilitate connections between applications, using TCP sockets, and following the scheme of event-driven programming.",
-  "version": "1.3.0",
-  "releasenote": "Add support for message verb shortcuts.",
+  "version": "1.3.1",
+  "releasenote": "Fix invalid argument.",
   "contributors": ["wikiti"],
   "dependencies": {
     "openfl": ""
