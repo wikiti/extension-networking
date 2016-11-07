@@ -20,15 +20,15 @@ Basically, a network can have multiple sessions. Each session will consist of on
 
 Add the library to your `project.xml`:
 
-````xml
+```xml
 <haxelib name="extension-networking" />
-````
+```
 
 And use `haxelib` to install it:
 
-````sh
+```shell
 $ haxelib install extension-networking
-````
+```
 
 ## Considerations
 
@@ -63,7 +63,7 @@ This library is based on **sessions**, so you can handle multiple connections to
 
 To register a sessión as a server listening to the port `8888` to all interfaces, use:
 
-````hx
+```haxe
 import networking.Network;
 import networking.utils.NetworkMode;
 
@@ -71,11 +71,11 @@ import networking.utils.NetworkMode;
 
 var server = Network.registerSession(NetworkMode.SERVER, { ip: '0.0.0.0', port: 8888, max_connections: 4 });
 server.start();
-````
+```
 
 To create a client that connects to that server:
 
-````hx
+```haxe
 import networking.Network;
 import networking.utils.NetworkMode;
 
@@ -87,7 +87,7 @@ var server_ip = '127.0.0.1';
 
 var client = Network.registerSession(NetworkMode.CLIENT, { ip: server_ip, port: 8888 });
 client.start();
-````
+```
 
 You can check for the connection statuses.
 
@@ -95,44 +95,44 @@ You can check for the connection statuses.
 
 Messages are serialized and send as dynamic objects. For example, to send a message from the client to the server:
 
-````hx
+```haxe
 client.send({ message: 'Hello world!', verb: 'test' });
-````
+```
 
 To notify all clients of the server:
 
-````hx
+```haxe
 server.send({ message: 'Global message!', verb: 'test' });
-````
+```
 
 To notify only the first client:
 
-````hx
+```haxe
 server.clients[0].send({ message: 'Pst! This is a secret between you and me!', verb: 'test' })
-````
+```
 
 Now, after that, it's time to add some events to handle messages. For example, to send information to a client after it has connected:
 
-````hx
+```haxe
 server.addEventListener(NetworkEvent.CONNECTED, function(event: NetworkEvent) {
   var connected_client = event.client();
   connected_client.send({ message: 'Welcome to the server!', verb: 'test });
 });
-````
+```
 
 To process the data recieved by the server:
 
-````hx
+```haxe
 client.addEventListener(NetworkEvent.MESSAGE_RECEIVED, function(event: NetworkEvent) {
   trace(event.data.message); // Hello world!
 });
-````
+```
 
 #### Disconnections
 
 To disconnect a client from the server:
 
-````hx
+```haxe
 // Disconnect the client right after it's connected.
 server.addEventListener(NetworkEvent.CONNECTED, function(event: NetworkEvent) {
   server.disconnectClient(event.client);
@@ -146,31 +146,31 @@ for(client in server.clients) {
   server.disconnectClient(client);
 }
 
-````
+```
 
 To disconnect from a server:
 
-````hx
+```haxe
 // Disconnect from the server right after it's connected.
 client.addEventListener(NetworkEvent.CONNECTED, function(event: NetworkEvent) {
   client.disconnectClient();
   // or `Network.destroySession(client)` to destroy the session.
 });
-````
+```
 
 #### Clossing sessions
 
 Finally, the sessions must be closed when required, for clients:
 
-````hx
+```haxe
 Network.destroySession(client);
-````
+```
 
 And for the server (which will disconnect all clients):
 
-````hx
+```haxe
 Network.destroySession(server);
-````
+```
 
 You'll probably don't want to reuse sessions; just create a new one if you need it, and destroy the old one.
 
@@ -180,21 +180,21 @@ More information about events on the [Events](#events) section.
 
 Each session will have an unique identifier or `uuid`, which will help to identify each server or client. By default, it will have assigned a random value (string).
 
-````hx
+```haxe
 // Server uuid
 server.uuid;
 
 // Server's client uuid
 server.clients[0].uuid;
-````
+```
 
-````hx
+```haxe
 // Client uuid
 client.uuid;
 
 // Client's server uuid
 client.server.uuid;
-````
+```
 
 If you want to use your own identifiers (for example, loading them from a file), see the *Parameters for sessions* section.
 
@@ -213,14 +213,14 @@ The following parameters are accepted for session registration. If a parameter h
 
 Example:
 
-````hx
+```haxe
 var server = Network.registerSession(NetworkMode.SERVER, {
   ip: '0.0.0.0',
   port: 7777,
   max_connections: 50,
   uuid: 'server_id'
 });
-````
+```
 
 
 #### Client parameters
@@ -233,13 +233,13 @@ var server = Network.registerSession(NetworkMode.SERVER, {
 
 Example:
 
-````hx
+```haxe
 var client = Network.registerSession(NetworkMode.CLIENT, {
   ip: '127.0.0.1',
   port: 7777,
   uuid: 'client_id'
 });
-````
+```
 
 ### Events
 
@@ -263,7 +263,7 @@ As we stated before, this library is based on events. The following events are a
 
 To group messages, you can use whatever syntax you like inside the message body. However, we recommend you using the `verb` strategy; just create a `verb` attribute, and assign a *meaning* to it to distinguish message types. For example:
 
-````hx
+```haxe
 server.addEventListener(NetworkEvent.MESSAGE_RECIEVED, function(e: NetworkEvent) {
   switch(e.data.verb) {
     case 'send_message':
@@ -272,16 +272,16 @@ server.addEventListener(NetworkEvent.MESSAGE_RECIEVED, function(e: NetworkEvent)
       event.client.send({ name: e.data.name, age: 2, breed: 'Dalmatian' });
   }
 });
-````
+```
 
-````hx
+```haxe
 client.send({ verb: 'send_message', str: 'Hello!' });
 client.send({ verb: 'give_me_a_puppy', name: 'Cooper' });
-````
+```
 
 Internally, the library uses a few message verbs to handle some cases:
 
-````yml
+```yml
 _core:
   messages:
     auto_verb: "Flag to determine if the current message is a event-driven shortcut."
@@ -289,7 +289,7 @@ _core:
     update_client_data: "Update client information. Required params: uuid(String)"
   errors:
     server_full: 'The server is full.'
-````
+```
 
 Core message handling will prevent event propagation: you won't have to handle them manually.
 
@@ -297,52 +297,52 @@ Core message handling will prevent event propagation: you won't have to handle t
 
 You can also use the `trigger` and `on` method to automatically manage verbs, so you can separate them easily.
 
-````hx
+```haxe
 server.trigger("say_hi", { to: "world" });
-````
+```
 
-````hx
+```haxe
 client.on("say_hi", function(data: Dynamic) {
   trace('Hello, ${data.to}!');
 });
-````
+```
 
 Which is a pseudo-equivalent of:
 
-````hx
+```haxe
 server.send({ verb: "say_hi", to: "world" });
-````
+```
 
-````hx
+```haxe
 client.addEventListener(NetworkEvent.MESSAGE_RECIEVED, function(event: NetworkEvent) {
   if(event.verb == "say_hi") {
     trace('Hello, ${event.data.to}!');
   }
 });
-````
+```
 
 The first case is has more semantic meaning, which improves readability.
 
 Note that clients can also *trigger events* into the server:
 
-````hx
+```haxe
 client.trigger("respond", { date: Date.now() });
-````
+```
 
-````hx
+```haxe
 server.on("respond", function(data: Dynamic) {
   trace('Hello, server! Today's ${data.date}');
 });
-````
+```
 
 If you need to check who the sender is, use an extra parameter called `event`, which will contain information about the network event.
 
-````hx
+```haxe
 session.on("verb", function(data: Dynamic, event: NetworkEvent) {
   trace(event.data); // { verb: 'verb', value: 'test', etc: 'etc' }
   trace(event.sender); // { uuid: '...', active: true }
 });
-````
+```
 
 `event` argument is available for callbacks in both server and client mode.
 
@@ -352,7 +352,7 @@ For more complex situations, we encourage you to use raw event handling (with `a
 
 If you want (or need) to handle multiple connections at once, you can use as many sessions as you wish. For example, to handle 2 servers and a client at the same time:
 
-````hx
+```haxe
 var server1 = Network.registerSession(NetworkMode.SERVER, { ip: '0.0.0.0', port: 8888, max_connections: 4 });
 var server2 = Network.registerSession(NetworkMode.SERVER, { ip: '0.0.0.0', port: 8889, max_connections: 4 });
 var client1 = Network.registerSession(NetworkMode.CLIENT, { ip: '89.73.42.3', port: 7777 });
@@ -360,47 +360,47 @@ var client1 = Network.registerSession(NetworkMode.CLIENT, { ip: '89.73.42.3', po
 server1.start();
 server2.start();
 client1.start();
-````
+```
 
 The registered sessions will be available in `Network.sessions` list:
 
-````hx
+```haxe
 trace(Network.sessions.length); // 3
-````
+```
 
 ### Logging
 
 To show the network logs on the console (*stdout*), define the `network_logging` define; just add this to your `project.xml`:
 
-````xml
+```xml
 <haxedef name="network_logging" />
-````
+```
 
 To include *backtraces*, use `network_logging_with_backtrace` instead:
 
-````xml
+```xml
 <haxedef name="network_logging_with_backtrace" />
-````
+```
 
 ## Development
 
 Clone the repository:
 
-````sh
+```shell
 $ git clone https://github.com/wikiti/extension-networking
-````
+```
 
 Then, setup the development directory:
 
-````sh
+```shell
 $ haxelib dev extension-networking extension-networking
-````
+```
 
 To run tests use [munit](https://github.com/massiveinteractive/MassiveUnit):
 
-````sh
+```shell
 $ haxelib run munit test
-````
+```
 
 ## TODO
 
