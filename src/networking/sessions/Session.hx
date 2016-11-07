@@ -140,6 +140,17 @@ class Session extends EventDispatcher {
     _events_queue.dispatchEvent(label, data);
   }
 
+  public function trigger(verb: String, data: Dynamic = null) {
+    if (data == null) data = {};
+    send({ verb: verb, content: data });
+  }
+
+  public function on(verb: String, callback: Dynamic) {
+    addEventListener(NetworkEvent.MESSAGE_RECEIVED, function(event: NetworkEvent) {
+      if (event.verb == verb) callback(event.data.content, event.sender);
+    });
+  }
+
   #if test
   public function eventsQueue(): NetworkEventsQueue {
     return _events_queue;

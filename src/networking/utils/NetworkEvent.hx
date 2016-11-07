@@ -65,6 +65,9 @@ class NetworkEvent extends Event {
   /** Verb (action) of the current event. **/
   public var verb(get, null): String;
 
+  /** The sender of the network message, if present. May be a Dynamic object with the following format: {  }. **/
+  public var sender(get, null): Dynamic;
+
   /**
    * Generate a new event.
    *
@@ -95,5 +98,18 @@ class NetworkEvent extends Event {
 
   private function get_verb(): String {
     return data.verb;
+  }
+
+  private function get_sender(): Dynamic {
+    try {
+      switch(session.mode) {
+        case SERVER: return metadata.client;
+        case CLIENT: return metadata.server;
+      }
+    }
+    catch (e: Dynamic) {
+      NetworkLogger.error(e);
+      return null;
+    }
   }
 }

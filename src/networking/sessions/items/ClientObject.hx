@@ -119,10 +119,10 @@ class ClientObject {
   }
 
   /**
-   * Send a message to the server.
+   * Send a message to the socket buffer.
    *
    * @param msg Object to send to it.
-   * @return true if the message was sent successfully to the server, false otherwise.
+   * @return true if the message was sent successfully sent, false otherwise.
    */
   public function send(msg: Dynamic): Bool {
     try {
