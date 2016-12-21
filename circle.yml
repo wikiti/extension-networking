@@ -17,7 +17,6 @@ dependencies:
     - sudo apt-get install mesa-common-dev libgl1-mesa-dev libglu1-mesa-dev -y
     - mkdir ~/haxelib
     - haxelib setup ~/haxelib
-    - haxelib install hxcpp
     - haxelib install mcover
     - haxelib install hamcrest
     - haxelib install openfl
@@ -27,7 +26,5 @@ dependencies:
 test:
   override:
     - haxelib run munit test
-    - haxelib run openfl build examples/basic-example/project.xml linux
     - haxelib run openfl build examples/basic-example/project.xml neko
-    - haxelib run openfl build examples/tic-tac-toe/project.xml linux
     - haxelib run openfl build examples/tic-tac-toe/project.xml neko

@@ -55,8 +55,8 @@ class Client {
     this.port = port;
 
     _uuid = uuid;
-    _thread = new ThreadWrapper(threadCreate, threadListen, threadClose);
     _mutex = new MutexWrapper();
+    _thread = new ThreadWrapper(threadCreate, threadListen, threadClose);
   }
 
   /**
@@ -91,6 +91,7 @@ class Client {
     // If this generates some errors, move it to the new method.
     try {
       info = new ClientObject(_session, _uuid, null, null);
+
       info.initializeSocket(ip, port);
 
       _session.triggerEvent(NetworkEvent.INIT_SUCCESS, { message: 'Connected to $ip:$port' } );

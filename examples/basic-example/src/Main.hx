@@ -48,7 +48,7 @@ class Main extends Sprite {
     var client_button_wrapper = new Sprite();
     client_button_wrapper.addEventListener(MouseEvent.CLICK, function(e: MouseEvent) {
       e.stopPropagation();
-      runClient(); // <-- Run server con button click.
+      runClient(); // <-- Run server with a button click.
     });
     client_button_wrapper.addChild(client_button);
     this.addChild(client_button_wrapper);
@@ -60,7 +60,7 @@ class Main extends Sprite {
     var server_button_wrapper = new Sprite();
     server_button_wrapper.addEventListener(MouseEvent.CLICK, function(e: MouseEvent) {
       e.stopPropagation();
-      runServer(); // <-- Run client con button click.
+      runServer(); // <-- Run client with a button click.
     });
     server_button_wrapper.addChild(server_button);
     this.addChild(server_button_wrapper);

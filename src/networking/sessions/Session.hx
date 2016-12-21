@@ -220,7 +220,7 @@ class Session extends EventDispatcher {
     NetworkLogger.event(e);
   }
 
-  private function handleCoreQueuedEvents(e: NetworkEvent) {
+  private function handleCoreQueuedEvents(e: Event) {
     // NOTE: Just add a timer or a counter here to handle networking every N seconds or frames. This way, it will work as a QUEUE. (Requires core).
     _events_queue.handleQueuedEvents();
   }

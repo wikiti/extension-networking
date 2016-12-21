@@ -21,4 +21,5 @@
 
   <!-- other -->
   <haxedef name="network_logging" />
+  <haxedef name="network_logging_with_backtrace" />
 </project>

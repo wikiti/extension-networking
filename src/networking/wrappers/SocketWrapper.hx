@@ -127,7 +127,10 @@ class SocketWrapper {
     _socket.output.writeUInt16(data.length);
     _socket.output.writeString(data);
     #else
-    _socket.readUTF();
+    _socket.writeUTF(data);
+    #if flash
+    _socket.flush();
+    #end
     #end
   }
 

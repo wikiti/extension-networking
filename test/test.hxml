@@ -13,14 +13,14 @@
 --next
 
 ## CPP
--main TestMain
--lib munit
--lib hamcrest
--lib openfl
--lib lime
--cp src/
--D test
-
--cp test/test
-#-D HXCPP_M64
--cpp test/build/cpp_test
+#-main TestMain
+#-lib munit
+#-lib hamcrest
+#-lib openfl
+#-lib lime
+#-cp src/
+#-D test
+#
+#-cp test/test
+##-D HXCPP_M64
+#-cpp test/build/cpp_test
