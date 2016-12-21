@@ -5,12 +5,10 @@ machine:
 dependencies:
   cache_directories:
     - test/build
-    - examples/basic-example/bin
-    - examples/tic-tac-toe/bin
 
   pre:
     - mkdir -p test/build examples/basic-example/bin
-    - sudo add-apt-repository ppa:eyecreate/haxe -y
+    - sudo add-apt-repository ppa:haxe/releases -y
     - sudo apt-get update
     - sudo apt-get install haxe -y --force-yes
     - sudo apt-get install g++-multilib gcc-multilib
@@ -22,6 +20,7 @@ dependencies:
     - haxelib install openfl
     - haxelib install lime
     - haxelib dev extension-networking .
+    - sudo ln -s /usr/lib/libneko.so.2 /usr/lib/libneko.so
 
 test:
   override:
