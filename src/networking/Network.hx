@@ -4,6 +4,10 @@ import networking.sessions.Session;
 import networking.utils.*;
 import networking.utils.NetworkMode;
 
+#if flash
+import flash.system.Security;
+#end
+
 /**
  * Session list.
  *
@@ -25,6 +29,12 @@ class Network {
   public static var sessions: Sessions = new Sessions();
 
   private function new() { }
+
+  static function __init__() {
+    #if flash
+    //Security.allowDomain('*');
+    #end
+  }
 
   /**
    * Register a new session. It'll be added to `Network.sessions`.

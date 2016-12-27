@@ -171,6 +171,6 @@ class ClientObject {
   }
 
   private function get_active(): Bool {
-    return socket != null;
+    return socket != null && socket.active();
   }
 }

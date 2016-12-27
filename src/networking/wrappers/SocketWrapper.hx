@@ -5,8 +5,14 @@ import networking.sessions.server.Server.PortType;
 #if (neko || cpp)
 import sys.net.Socket;
 import sys.net.Host;
+#elseif flash
+import flash.net.Socket;
 #else
 import openfl.net.Socket;
+#end
+
+#if flash
+import flash.events.IOErrorEvent;
 #end
 
 /**
@@ -112,6 +118,26 @@ class SocketWrapper {
     #if (neko || cpp)
     var len = _socket.input.readUInt16();
     return _socket.input.readString(len);
+    #elseif flash
+    if(_socket.bytesPending > 0) _socket.flush();
+    trace('FUNCTION');
+    trace(_socket.bytesAvailable);
+    trace(_socket.bytesPending);
+    trace(_socket.connected);
+
+
+
+    if (_socket.bytesAvailable == 0) {
+      trace("pre");
+      var data = _socket.readUTF();
+      trace(data);
+      trace("pos");
+      return data;
+    }
+    else {
+      return null;
+    }
+
     #else
     return _socket.readUTF();
     #end
@@ -145,6 +171,18 @@ class SocketWrapper {
     return '${peer.host}:${peer.port}';
     #else
     return _socket.toString();
+    #end
+  }
+
+  /**
+   * TODO: Document me!
+   * @return
+   */
+  public function active(): Bool {
+    #if flash
+    return _socket != null; // && _socket.connected;
+    #else
+    return _socket != null;
     #end
   }
 }
