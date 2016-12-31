@@ -6,12 +6,13 @@ import networking.utils.NetworkLogger;
 import networking.sessions.Session;
 import networking.sessions.items.ClientObject;
 import networking.sessions.items.ServerObject;
+import networking.sessions.server.FlashPolicyServer;
 import networking.utils.*;
 
 import networking.wrappers.*;
 
 /** Port type (integer). **/
-typedef PortType = Int;
+typedef PortType = Null<Int>;
 
 /** Clients list (array of ClientObjects). **/
 typedef Clients = Array<ClientObject>;
@@ -36,6 +37,9 @@ class Server {
   /** Default session identifier (random). Used in the constructor. **/
   public static inline var DEFAULT_UUID: String = null;
 
+  /** Default flag to allow flash clients. Setting this flash to true will create a FlashPolicyServer object. **/
+  public static inline var DEFAULT_ALLOW_FLASH_CLIENTS: Bool = false;
+
   /** Max allowed connection pending requests. This value is hard-coded and should not be modified. **/
   public static inline var MAX_LISTEN_INCOMING_REQUESTS: Int = 200;
 
@@ -54,10 +58,14 @@ class Server {
   /** Max allowed clients. **/
   public var max_connections(default, null): Int;
 
+  /** Flag to enable or disable flash clients to connect to this server. **/
+  public var allow_flash_clients(default, null): Bool;
+
   private var _session: Session;
   private var _mutex: MutexWrapper;
   private var _uuid: Uuid;
   private var _thread: ThreadWrapper;
+  private var _policy_server: FlashPolicyServer;
 
   /**
    * Create a new server session that will bind the given ip and port.
@@ -69,7 +77,9 @@ class Server {
    * @param port Server port to connect into.
    * @param max_connections Max allowed clients at the same time.
    */
-  public function new(session: Session, uuid: Uuid = DEFAULT_UUID, ip: String = DEFAULT_IP, port: Null<PortType> = DEFAULT_PORT, max_connections: Null<Int> = DEFAULT_MAX_CONNECTIONS) {
+  public function new(session: Session, uuid: Uuid = DEFAULT_UUID, ip: String = DEFAULT_IP, port: PortType = DEFAULT_PORT, max_connections: Null<Int> = DEFAULT_MAX_CONNECTIONS,
+      allow_flash_clients: Null<Bool> = DEFAULT_ALLOW_FLASH_CLIENTS) {
+
     #if !(cpp || neko)
     throw 'Server mode is not available in non-native targets.';
     #end
@@ -92,9 +102,15 @@ class Server {
     this.ip = ip;
     this.port = port;
     this.max_connections = max_connections;
+    this.allow_flash_clients = allow_flash_clients;
 
     clients = [];
     _thread = new ThreadWrapper(null, threadLoop, null);
+
+    if(this.allow_flash_clients) {
+      _policy_server = new FlashPolicyServer(this);
+      _policy_server.run();
+    }
   }
 
   /**
@@ -142,6 +158,8 @@ class Server {
    */
   public function stop() {
     if (_thread != null) _thread.stop();
+    if (_policy_server != null) _policy_server.stop();
+
     _mutex.acquire();
     cleanup();
     _mutex.release();
@@ -149,6 +167,7 @@ class Server {
 
     _thread = null;
     _mutex = null;
+    _policy_server = null;
   }
 
   /**
@@ -157,6 +176,15 @@ class Server {
    */
   public inline function send(obj: Dynamic) {
     broadcast(obj);
+  }
+
+  /**
+   * Retrieves the related session to the server.
+   *
+   * @return A `Session` object related to this server.
+   */
+  public inline function session(): Session {
+    return _session;
   }
 
   // Accepts new sockets and spawns new threads for them.

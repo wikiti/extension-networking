@@ -1,5 +1,6 @@
 package networking.wrappers;
 
+import haxe.io.Bytes;
 import networking.sessions.server.Server.PortType;
 
 #if (neko || cpp)
@@ -118,6 +119,21 @@ class SocketWrapper {
   }
 
   /**
+   * TODO
+   * @param buffer
+   * @param length
+   * @param offset
+   * @return
+   */
+  /*public function readBytes(buffer: Bytes, length: Int, offset: Int = 0): Int {
+    #if (neko || cpp)
+    return _socket.input.readBytes(buffer, offset, length);
+    #else
+    throw 'Method not implemented in non native targets.';
+    #end
+  }*/
+
+  /**
    * Write a string into the socket buffer.
    *
    * @param data String to write into the buffer.
@@ -131,6 +147,14 @@ class SocketWrapper {
     #if flash
     _socket.flush();
     #end
+    #end
+  }
+
+  public function writeBytes(buffer: Bytes, length: Int, offset: Int = 0) {
+    #if (neko || cpp)
+    return _socket.output.writeBytes(buffer, offset, length);
+    #else
+    throw 'Method not implemented in non native targets.';
     #end
   }
 
