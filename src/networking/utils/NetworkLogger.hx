@@ -2,6 +2,10 @@ package networking.utils;
 
 import haxe.CallStack;
 
+#if flash
+import flash.external.ExternalInterface;
+#end
+
 /**
  * Network log levels.
  *
@@ -58,6 +62,11 @@ class NetworkLogger {
   public static inline function log(msg: String, level:NetworkLogLevel = NetworkLogLevel.Info) {
     #if (network_logging || network_logging_with_backtrace)
     trace('# NETWORK $level -- $ -- $msg');
+
+    #if flash
+    try { ExternalInterface.call("console.log", '# NETWORK $level -- $ -- $msg'); }
+    catch(e: Dynamic) {}
+    #end
     #end
   }
 }

@@ -8,6 +8,8 @@ import networking.sessions.server.Server.PortType;
 import networking.utils.*;
 import networking.wrappers.*;
 
+import openfl.system.Security;
+
 
 /**
  * Client wrapper. Represents a client session.
@@ -26,6 +28,9 @@ class Client {
   /** Default session identifier (random). Used in the constructor. **/
   public static inline var DEFAULT_UUID: String = null;
 
+  /** Default flash policy file url to download the policy file. **/
+  public static inline var DEFAULT_FLASH_POLICY_FILE_URL: String = null;
+
   /** ClientObject info. Contains low level objects (sockets). **/
   public var info(default, null): ClientObject;
 
@@ -34,6 +39,9 @@ class Client {
 
   /** Current server port. **/
   public var port(default, null): PortType;
+
+  /** Flash-clients related. This property is used to setup a download url for policy files. **/
+  public var flash_policy_file_url(default, null): String;
 
   private var _session: Session;
   private var _mutex: MutexWrapper;
@@ -49,16 +57,17 @@ class Client {
    * @param ip Server ip to connect into.
    * @param port Server port to connect into.
    */
-  public function new(session: Session, uuid: Uuid = DEFAULT_UUID, ip: String = DEFAULT_IP, port: PortType = DEFAULT_PORT) {
+  public function new(session: Session, uuid: Uuid = DEFAULT_UUID, ip: String = DEFAULT_IP, port: PortType = DEFAULT_PORT,
+      flash_policy_file_url: String = DEFAULT_FLASH_POLICY_FILE_URL) {
+
     this._session = session;
     this.ip = ip;
     this.port = port;
+    this.flash_policy_file_url = flash_policy_file_url;
 
     _uuid = uuid;
     _mutex = new MutexWrapper();
-    trace('pre');
     _thread = new ThreadWrapper(threadCreate, threadListen, threadClose);
-    trace('post');
   }
 
   /**
@@ -88,7 +97,18 @@ class Client {
   }
 
   private function threadCreate(): Bool {
+    #if html5
+    _session.triggerEvent(NetworkEvent.INIT_FAILURE, { message: 'HTML5 is not a supported target.' });
+    return false;
+    #end
+
     _disconnected_message = '';
+
+    if (flash_policy_file_url != null) {
+      trace("Setting url for: " + flash_policy_file_url);
+      Security.allowDomain("*");
+      Security.loadPolicyFile(flash_policy_file_url);
+    }
 
     // To avoid lagging the main thread, the initialization code is moved right here.
     // If this generates some errors, move it to the new method.
@@ -112,8 +132,6 @@ class Client {
     };
 
     info.initializeSocket(ip, port, on_connect, on_failure);
-
-    trace("Connected");
 
     return true;
   }

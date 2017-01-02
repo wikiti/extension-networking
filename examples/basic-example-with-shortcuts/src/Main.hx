@@ -48,7 +48,7 @@ class Main extends Sprite {
     var client_button_wrapper = new Sprite();
     client_button_wrapper.addEventListener(MouseEvent.CLICK, function(e: MouseEvent) {
       e.stopPropagation();
-      runClient(); // <-- Run client with a button click.
+      runClient(); // <-- Run server con button click.
     });
     client_button_wrapper.addChild(client_button);
     this.addChild(client_button_wrapper);
@@ -60,7 +60,7 @@ class Main extends Sprite {
     var server_button_wrapper = new Sprite();
     server_button_wrapper.addEventListener(MouseEvent.CLICK, function(e: MouseEvent) {
       e.stopPropagation();
-      runServer(); // <-- Run server with a button click.
+      runServer(); // <-- Run client con button click.
     });
     server_button_wrapper.addChild(server_button);
     this.addChild(server_button_wrapper);
@@ -77,7 +77,7 @@ class Main extends Sprite {
     this.addChild(cube);
 
     // Create the server...
-    var server = Network.registerSession(NetworkMode.SERVER, { ip: '0.0.0.0', port: 8888, flash_policy_file_port: 9999 });
+    var server = Network.registerSession(NetworkMode.SERVER, { ip: '0.0.0.0', port: '8888' });
 
       // ... add some event listeners...
 
@@ -86,17 +86,22 @@ class Main extends Sprite {
 
     // When a client is connected...
     server.addEventListener(NetworkEvent.CONNECTED, function(event: NetworkEvent) {
-      // Send the current position of the cube.
-      event.client.send({ x: cube.x, y: cube.y });
+      // resend the current position of the cube to all clients.
+      server.trigger("update_cube_pos", { x: cube.x, y: cube.y });
+      // If you don't want to broadcast the cube's position every time a client connects, you can
+      // send a message to a specific client with the following line:
+      //    event.client.send({ verb: "update_cube_pos", x: cube.x, y: cube.y });
     });
 
-    // When recieving a message from a client...
-    server.addEventListener(NetworkEvent.MESSAGE_RECEIVED, function(event: NetworkEvent) {
+    // When recieving a "click" message from a client...
+    server.on("click", function(data: Dynamic, sender: Dynamic) {
       // ... update the position...
-      cube.x = event.data.x;
-      cube.y = event.data.y;
+      cube.x = data.x;
+      cube.y = data.y;
       // ... and broadcast the location to all clients.
-      server.send({ x: cube.x, y: cube.y });
+      server.trigger("update_cube_pos", { x: cube.x, y: cube.y });
+
+      trace('Client: $sender');
     });
 
       // ... and run it!
@@ -117,18 +122,20 @@ class Main extends Sprite {
     this.addChild(cube);
 
       // Create the client...
-    var client = Network.registerSession(NetworkMode.CLIENT, { ip: '127.0.0.1', port: 8888, flash_policy_file_url: 'http://127.0.0.1:9999/crossdomain.xml' });
+    var client = Network.registerSession(NetworkMode.CLIENT, { ip: '127.0.0.1', port: '8888' });
 
       // ... add some event listeners...
 
     // When clicking on the screen...
     Lib.current.stage.addEventListener(MouseEvent.CLICK, onScreenClick);
 
-    // When a client recieves a message ...
-    client.addEventListener(NetworkEvent.MESSAGE_RECEIVED, function(event: NetworkEvent) {
+    // When a client recieves an "update_cube_pos" message ...
+    client.on("update_cube_pos", function(data: Dynamic, sender: Dynamic) {
       // ... update the cube's position.
-      cube.x = event.data.x;
-      cube.y = event.data.y;
+      cube.x = data.x;
+      cube.y = data.y;
+
+      trace('Server: $sender');
     });
 
       // ... and run it!
@@ -153,15 +160,15 @@ class Main extends Sprite {
         cube.x = event.localX - cube.width * 0.5;
         cube.y = event.localY - cube.height * 0.5;
 
-        // ... and send information to all clients about where is it. Note that there is a `verb`
-        // parameter to identify messages types.
-        session.send({ x: event.localX - cube.width * 0.5, y: event.localY - cube.height * 0.5 });
+        // ... and send information to all clients about where is it.
+        session.trigger("update_cube_pos", { x: event.localX - cube.width * 0.5, y: event.localY - cube.height * 0.5 });
+
 
       // If we're the client...
       case NetworkMode.CLIENT:
         // ... send a message to the server about the current location. Note that the position is not updated!
         // It will be updated after the server has processed the request.
-        session.send({ x: event.localX - cube.width * 0.5, y: event.localY - cube.height * 0.5 });
+        session.trigger("click", { x: event.localX - cube.width * 0.5, y: event.localY - cube.height * 0.5 });
     }
   }
 

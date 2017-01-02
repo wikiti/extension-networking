@@ -18,6 +18,9 @@ import openfl.net.Socket;
  * @author Daniel Herzog
  */
 class SocketWrapper {
+  /** Max string size, in bytes. */
+  public var MAX_DATA_SIZE: Int = 65535;
+
   /** Callback used called when a connection is established. This callback should not be handled manually. **/
   public var onConnect(default, default): Dynamic->Void;
 
@@ -28,7 +31,6 @@ class SocketWrapper {
   public var connected: Bool;
 
   private var _socket: Socket;
-
 
   /**
    * Create a new socket.
@@ -51,7 +53,6 @@ class SocketWrapper {
    * @param port Port to connect to.
    */
   public function connect(host: String, port: PortType) {
-    // TODO: Neko
     #if (neko || cpp)
     try {
       _socket.connect(new Host(host), port);
@@ -63,24 +64,28 @@ class SocketWrapper {
       connected = false;
     }
     #else
-    _socket.addEventListener(Event.CONNECT, function(e: Dynamic) {
+
+    var on_connect_handler: Dynamic->Void = function(e: Dynamic) {
       try {
-        onConnect(e);
         connected = true;
+        onConnect(e);
       }
       catch (e: Dynamic) {
         onFailure(e);
       }
-    });
-    _socket.addEventListener(Event.CLOSE, function(e: Dynamic) {
+    };
+
+    var on_failure_handler: Dynamic->Void = function(e: Dynamic) {
+      NetworkLogger.error(e);
       if(!connected) {
         onFailure(e);
         connected = false;
       }
-      else {
-        // Disconnect?
-      }
-    });
+    };
+
+    _socket.addEventListener(Event.CONNECT, on_connect_handler);
+    _socket.addEventListener(IOErrorEvent.IO_ERROR, on_failure_handler);
+    _socket.addEventListener(SecurityErrorEvent.SECURITY_ERROR, on_failure_handler);
 
     _socket.connect(host, port);
     #end
@@ -90,6 +95,10 @@ class SocketWrapper {
    * Close the client or server socket.
    */
   public function close() {
+    #if !(cpp || neko)
+    if (!_socket.connected) return;
+    #end
+
     #if (!neko && cpp)
     _socket.shutdown(true, true);
     #end
@@ -167,9 +176,8 @@ class SocketWrapper {
    */
   public function write(data: String) {
     #if !(neko || cpp)
-    if (!connected || !_socket.connected) {
-      return;
-    }
+    if (_socket == null) return;
+    if (!connected || !_socket.connected) throw 'Connection not established.';
     #end
 
     writeString(data);
@@ -177,17 +185,18 @@ class SocketWrapper {
   }
 
   /**
-   * TODO
+   * Write raw bytes stored in a buffer. Only available in native targets.
    *
-   * @param buffer
-   * @param length
-   * @param offset
+   * @param buffer Buffer to wrint onto the socket's buffer.
+   * @param length Buffer data's length.
+   * @param offset Buffer data's initial byte.
    */
   public function writeBytes(buffer: Bytes, length: Int, offset: Int = 0) {
     #if (neko || cpp)
-    return _socket.output.writeBytes(buffer, offset, length);
+    _socket.output.writeBytes(buffer, offset, length);
+    flush();
     #else
-    throw 'Method not implemented in non native targets.';
+    throw 'Method not available in non-native targets.';
     #end
   }
 
@@ -227,7 +236,8 @@ class SocketWrapper {
 
   // Write a string (size + bytes).
   private function writeString(s: String) {
-    // TODO: Handle max string size
+    if (s.length > MAX_DATA_SIZE)
+      throw 'String data is too big - ${s.length} bytes (${MAX_DATA_SIZE} bytes max)';
 
     writeUnsignedInt16(s.length);
 

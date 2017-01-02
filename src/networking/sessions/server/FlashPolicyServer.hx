@@ -9,6 +9,7 @@ import networking.utils.NetworkLogger;
 import networking.wrappers.SocketWrapper;
 import networking.wrappers.ThreadWrapper;
 
+
 /**
  * Server for handling flash clients.
  *
@@ -34,9 +35,10 @@ class FlashPolicyServer {
   private var _thread: ThreadWrapper;
 
   /**
-   * TODO
-   * @param server
-   * @param port
+   * Create a new flash policy file server.
+   *
+   * @param server Server reference.
+   * @param port Port.
    */
   public function new(server: Server, port: PortType = null) {
     if (port == null) port = PORT;
@@ -48,7 +50,7 @@ class FlashPolicyServer {
   }
 
   /**
-   * TODO
+   * Init and run the flash policy file server.
    */
   public function run() {
     #if !(cpp || neko)
@@ -59,7 +61,7 @@ class FlashPolicyServer {
   }
 
   /**
-   * TODO
+   * Stop the flash policy file server.
    */
   public function stop() {
     _thread.stop();
@@ -74,7 +76,6 @@ class FlashPolicyServer {
       _server.session().triggerEvent(NetworkEvent.SECURITY_ERROR, 'Could not start policy server.');
       return false;
     }
-    trace("FPServer started!");
 
     return true;
   }
@@ -91,7 +92,9 @@ class FlashPolicyServer {
     }
 
     var bytes: Bytes = Bytes.ofString(
-      '<cross-domain-policy><site-control permitted-cross-domain-policies="all" /><allow-access-from domain="*" to-ports="*" /></cross-domain-policy>\x00'
+      'HTTP/1.1 200 OK\n\r' +
+      'Content-Type: text/xml\n\r\n\r' +
+      '<cross-domain-policy><site-control permitted-cross-domain-policies="master-only"/><allow-access-from domain="*" to-ports="*" /></cross-domain-policy>\x00'
     );
 
     try {
