@@ -79,9 +79,10 @@ class Client {
    * Stop the client session, to disconnect from the server.
    */
   public function stop() {
-    _thread.stop();
+    if(info.socket != null && info.socket.connected) {
+      _session.triggerEvent(NetworkEvent.CLOSED, { client: this, message: 'Session closed.' } );
+    }
     disconnect();
-    _session.triggerEvent(NetworkEvent.CLOSED, { client: this, message: 'Session closed.' } );
   }
 
   private function threadCreate(): Bool {
@@ -89,46 +90,51 @@ class Client {
 
     // To avoid lagging the main thread, the initialization code is moved right here.
     // If this generates some errors, move it to the new method.
-    try {
-      info = new ClientObject(_session, _uuid, null, null);
+    info = new ClientObject(_session, _uuid, null, null);
 
-      info.initializeSocket(ip, port);
-
+    var on_connect = function(data: Dynamic) {
       _session.triggerEvent(NetworkEvent.INIT_SUCCESS, { message: 'Connected to $ip:$port' } );
       _session.triggerEvent(NetworkEvent.CONNECTED, { message: 'Connected to $ip:$port' });
-    }
-    catch(e: Dynamic) {
-      _session.triggerEvent(NetworkEvent.INIT_FAILURE, { message: 'Could not connect to $ip:$port: $e' });
-      return false;
-    }
 
-    info.load();
-    if (!info.send({ verb: '_core.sync.update_client_data', uuid: info.uuid })) {
-      _session.triggerEvent(NetworkEvent.INIT_FAILURE, { message: "Could not update client's data" });
-      return false;
-    }
+      info.load();
+      if (!info.send({ verb: '_core.sync.update_client_data', uuid: info.uuid })) {
+        throw "Could not update client's data";
+      }
 
-    _disconnected_message = 'Disconnected';
+      _disconnected_message = 'Disconnected';
+    };
+
+    var on_failure = function(error: Dynamic) {
+      _session.triggerEvent(NetworkEvent.INIT_FAILURE, { message: 'Could not connect to server.' });
+      stop();
+    };
+
+    info.initializeSocket(ip, port, on_connect, on_failure);
+
+    trace("Connected");
 
     return true;
   }
 
   // Listener thread
   private function threadListen(): Bool {
-    try {
+    //try {
       info.read();
-    }
-    catch (z: Dynamic) {
-      _disconnected_message = 'Connection lost: ${z}';
-      return false;
-    }
+    //}
+    //catch (e: Dynamic) {
+    //  NetworkLogger.error(e);
+    //  _disconnected_message = 'Connection lost: ${e}';
+      //return false;
+    //}
 
     return true;
   }
 
   private function threadClose(): Void {
+    if(info.socket != null && info.socket.connected) {
+      _session.triggerEvent(NetworkEvent.DISCONNECTED, { message: _disconnected_message });
+    }
     disconnect();
-    _session.triggerEvent(NetworkEvent.DISCONNECTED, { message: _disconnected_message });
   }
 
   private function disconnect() {

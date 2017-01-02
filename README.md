@@ -250,8 +250,8 @@ As we stated before, this library is based on events. The following events are a
 | INIT_SUCCESS | Server successfully binded to the given ip and port. | Client connected to the server successfully. |
 | INIT_FAILURE | Server could not bind the given ip and port. | Client could not connect to the server. |
 | CONNECTED | New client connected. | Client connected to the server (after INIT_SUCCESS). |
-| DISCONNECTED | Client disconnected (due to an error or voluntarily). | Disconnected from the server (due to an error or voluntarily), which means that the socket is closed (asynchronously). May be fired after `CLOSED` event. |
-| CLOSED | Session closed (called on `session.stop()` or `Network.destroySession(session)`). | Session closed (called on `session.stop()` or `Network.destroySession(session)`). May be fired before `DISCONNECTED` event.  |
+| DISCONNECTED | Client disconnected (due to an error or voluntarily). | Disconnected from the server (due to an error), which means that the socket is closed (asynchronously). May be fired after `CLOSED` event. |
+| CLOSED | Session closed (called on `session.stop()` or `Network.destroySession(session)`). | Disconnected from the server (voluntarily) by closing the session (called on `session.stop()` or `Network.destroySession(session)`). |
 | MESSAGE_RECEIVED | Message recieved from a client. | Message recieved from the server. |
 | MESSAGE_SENT | Message sent to a client. | Message sent to the server. |
 | MESSAGE_SENT_FAILED | An error ocurred while sending a message to a specific client. | An error ocurred while sending a message to the server. |

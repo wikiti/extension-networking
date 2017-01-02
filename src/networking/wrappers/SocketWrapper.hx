@@ -2,11 +2,13 @@ package networking.wrappers;
 
 import haxe.io.Bytes;
 import networking.sessions.server.Server.PortType;
+import networking.utils.NetworkLogger;
 
-#if (neko || cpp)
+#if (cpp)
 import sys.net.Socket;
 import sys.net.Host;
 #else
+import openfl.events.*;
 import openfl.net.Socket;
 #end
 
@@ -16,7 +18,17 @@ import openfl.net.Socket;
  * @author Daniel Herzog
  */
 class SocketWrapper {
+  /** Callback used called when a connection is established. This callback should not be handled manually. **/
+  public var onConnect(default, default): Dynamic->Void;
+
+  /** Callback used when a connection fails from the beginning. This callback should not be handled manually. **/
+  public var onFailure(default, default): Dynamic->Void;
+
+  /** A flag to test if the current socket has connected once (at least) to the server. **/
+  public var connected: Bool;
+
   private var _socket: Socket;
+
 
   /**
    * Create a new socket.
@@ -28,6 +40,8 @@ class SocketWrapper {
       _socket = data;
     else
       _socket = new Socket();
+
+    connected = false;
   }
 
   /**
@@ -37,9 +51,37 @@ class SocketWrapper {
    * @param port Port to connect to.
    */
   public function connect(host: String, port: PortType) {
-    #if (neko || cpp)
-    _socket.connect(new Host(host), port);
+    // TODO: Neko
+    #if (cpp)
+    try {
+      _socket.connect(new Host(host), port);
+      onConnect(null);
+      connected = true;
+    }
+    catch (e: Dynamic) {
+      onFailure(e);
+      connected = false;
+    }
     #else
+    _socket.addEventListener(Event.CONNECT, function(e: Dynamic) {
+      try {
+        onConnect(e);
+        connected = true;
+      }
+      catch (e: Dynamic) {
+        onFailure(e);
+      }
+    });
+    _socket.addEventListener(Event.CLOSE, function(e: Dynamic) {
+      if(!connected) {
+        onFailure(e);
+        connected = false;
+      }
+      else {
+        // Disconnect?
+      }
+    });
+
     _socket.connect(host, port);
     #end
   }
@@ -62,7 +104,7 @@ class SocketWrapper {
    * @return Accepted socket.
    */
   public function accept(): SocketWrapper {
-    #if (neko || cpp)
+    #if (cpp)
     var sk = _socket.accept();
     if (sk != null)
       return new SocketWrapper(sk);
@@ -81,7 +123,7 @@ class SocketWrapper {
    * @param connections Max pending requests until they get refused.
    */
   public function listen(connections: Int) {
-    #if (neko || cpp)
+    #if (cpp)
     _socket.listen(connections);
     #else
     throw 'Method not available in non-native targets.';
@@ -96,7 +138,7 @@ class SocketWrapper {
    * @param port Port to bind.
    */
   public function bind(host: String, port: PortType) {
-    #if (neko || cpp)
+    #if (cpp)
     _socket.bind(new Host(host), port);
     #else
     throw 'Method not available in non-native targets.';
@@ -107,31 +149,16 @@ class SocketWrapper {
    * Read a string from the socket buffer.
    * This is a blocking method.
    *
-   * @return Readed string.
+   * @return A string.
    */
   public function read(): String {
-    #if (neko || cpp)
-    var len = _socket.input.readUInt16();
-    return _socket.input.readString(len);
-    #else
-    return _socket.readUTF();
+    #if !(cpp)
+    if(!connected || (_socket.connected && _socket.bytesAvailable == 0)) return null;
+    if(!_socket.connected) throw 'Disconnected from server';
     #end
-  }
 
-  /**
-   * TODO
-   * @param buffer
-   * @param length
-   * @param offset
-   * @return
-   */
-  /*public function readBytes(buffer: Bytes, length: Int, offset: Int = 0): Int {
-    #if (neko || cpp)
-    return _socket.input.readBytes(buffer, offset, length);
-    #else
-    throw 'Method not implemented in non native targets.';
-    #end
-  }*/
+    return readString();
+  }
 
   /**
    * Write a string into the socket buffer.
@@ -139,19 +166,25 @@ class SocketWrapper {
    * @param data String to write into the buffer.
    */
   public function write(data: String) {
-    #if (neko || cpp)
-    _socket.output.writeUInt16(data.length);
-    _socket.output.writeString(data);
-    #else
-    _socket.writeUTF(data);
-    #if flash
-    _socket.flush();
+    #if !(cpp)
+    if (!connected || !_socket.connected) {
+      return;
+    }
     #end
-    #end
+
+    writeString(data);
+    flush();
   }
 
+  /**
+   * TODO
+   *
+   * @param buffer
+   * @param length
+   * @param offset
+   */
   public function writeBytes(buffer: Bytes, length: Int, offset: Int = 0) {
-    #if (neko || cpp)
+    #if (cpp)
     return _socket.output.writeBytes(buffer, offset, length);
     #else
     throw 'Method not implemented in non native targets.';
@@ -164,11 +197,68 @@ class SocketWrapper {
    * @return A string that represents the socket.
    */
   public function toString(): String {
-    #if (neko || cpp)
+    #if (cpp)
     var peer = _socket.peer();
     return '${peer.host}:${peer.port}';
     #else
     return _socket.toString();
+    #end
+  }
+
+  // Flush output content.
+  private function flush() {
+    #if (cpp)
+    _socket.output.flush();
+    #else
+    _socket.flush();
+    #end
+  }
+
+  // Write 2 bytes as an unsigned integer.
+  private function writeUnsignedInt16(x: UInt) {
+    #if (cpp)
+    _socket.output.writeByte((x >> 8) & 0xFF);
+    _socket.output.writeByte(x & 0xFF);
+    #else
+    _socket.writeByte((x >> 8) & 0xFF);
+    _socket.writeByte(x & 0xFF);
+    #end
+  }
+
+  // Write a string (size + bytes).
+  private function writeString(s: String) {
+    // TODO: Handle max string size
+
+    writeUnsignedInt16(s.length);
+
+    #if (cpp)
+    _socket.output.writeString(s);
+    #else
+    _socket.writeUTFBytes(s);
+    #end
+  }
+
+  // Read 2 bytes as an unsigned integer.
+  private function readUnsignedInt16(): UInt {
+    #if (cpp)
+    var byte1: Int = _socket.input.readByte() & 0xFF;
+    var byte2: Int = _socket.input.readByte() & 0xFF;
+    #else
+    var byte1: Int = _socket.readByte() & 0xFF;
+    var byte2: Int = _socket.readByte() & 0xFF;
+    #end
+
+    return (byte1 << 8) | byte2;
+  }
+
+  // Read a string (size + bytes).
+  private function readString(): String {
+    var len: UInt = readUnsignedInt16();
+
+    #if (cpp)
+    return _socket.input.readString(len);
+    #else
+    return _socket.readUTFBytes(len);
     #end
   }
 }

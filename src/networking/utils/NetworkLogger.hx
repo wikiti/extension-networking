@@ -12,7 +12,7 @@ import haxe.CallStack;
   var Info = "INFO";
 
   /** Event level. **/
-  var Event = "EVENT";
+  var EventLog = "EVENT";
 
   /** Error level. **/
   var Error = "ERROR";
@@ -46,7 +46,7 @@ class NetworkLogger {
    * @param event Network event to log.
    */
   public static inline function event(event: NetworkEvent) {
-    log('${event.type} -- ${event.netData}', NetworkLogLevel.Event);
+    log('${event.type} -- ${event.netData}', NetworkLogLevel.EventLog);
   }
 
   /**

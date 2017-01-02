@@ -1,6 +1,5 @@
 package networking.sessions.server;
 
-import haxe.CallStack;
 import haxe.io.Bytes;
 
 import networking.sessions.server.Server;
@@ -91,41 +90,17 @@ class FlashPolicyServer {
       return true;
     }
 
-    /*var buffer: Bytes = Bytes.alloc(30);
-    var cont: Bool = true;
-    var len: Int = 0;
+    var bytes: Bytes = Bytes.ofString(
+      '<cross-domain-policy><site-control permitted-cross-domain-policies="all" /><allow-access-from domain="*" to-ports="*" /></cross-domain-policy>\x00'
+    );
 
-    var msg: String = '';
-
-    while (cont) {
-      try {
-        client.blockUntilData();
-
-        len += client.readBytes(buffer, 100, len);
-        msg += buffer.toString().substr(0, len);
-        cont = msg.indexOf('\x00') < 0;
-        trace("Msg!");
-      }
-      catch (e: Dynamic) {
-        var str = Std.string(e);
-        var s: CallStack;
-
-        trace(CallStack.exceptionStack().join("\n"));
-
-        if (str != 'Eof')
-          NetworkLogger.error('Error while reading from FlashPolicyServer: $str');
-
-        cont = false;
-      }
-    }*/
-
-    //if(msg.substr(1, 6) == 'policy') {
-    var response: String = '<cross-domain-policy><site-control permitted-cross-domain-policies="all" /><allow-access-from domain="*" to-ports="*" /></cross-domain-policy>\x00';
-    var bytes = Bytes.ofString(response);
-    client.writeBytes(bytes, bytes.length);
-    //}
-
-    client.close();
+    try {
+      client.writeBytes(bytes, bytes.length);
+      client.close();
+    }
+    catch (e: Dynamic) {
+      NetworkLogger.error(e);
+    }
 
     return true;
   }

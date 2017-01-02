@@ -81,13 +81,19 @@ class ClientObject {
    *
    * @param ip Ip host to connect into.
    * @param port TCP port to connect into.
+   * @param on_connect Callback called when the socket connects.
+   * @param on_failure Callback called when the socket connection fails.
    * @return true if the socket is created, false otherwise.
    */
-  public function initializeSocket(ip: String, port: PortType): Bool {
+  public function initializeSocket(ip: String, port: PortType, on_connect: Dynamic->Void = null, on_failure: Dynamic->Void = null): Bool {
     if (socket != null) return false;
 
     socket = new SocketWrapper();
+    socket.onConnect = on_connect;
+    socket.onFailure = on_failure;
+
     socket.connect(ip, port);
+
     return true;
   }
 
@@ -146,7 +152,8 @@ class ClientObject {
    * Read a message from the current socket buffer. Pending messages will be handled on the events queue.
    */
   public function read() {
-    if(active) _session.triggerEvent(NetworkEvent.MESSAGE_RECEIVED, { obj: this, message: NetworkMessage.parse(socket.read()) });
+    var data: String = socket.read();
+    if(active && data != null) _session.triggerEvent(NetworkEvent.MESSAGE_RECEIVED, { obj: this, message: NetworkMessage.parse(data) });
   }
 
   /**
