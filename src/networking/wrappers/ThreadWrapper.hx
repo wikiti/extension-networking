@@ -8,6 +8,18 @@ import cpp.vm.Thread;
 import lime.system.ThreadPool;
 #end
 
+#if flash
+import openfl.Lib;
+import openfl.events.Event;
+
+enum ThreadState {
+  Starting;
+  Looping;
+  Closing;
+  Finished;
+}
+#end
+
 /**
  * Class wrapper for threads.
  *
@@ -19,6 +31,10 @@ class ThreadWrapper {
   private var _on_start: Void->Bool;
   private var _on_loop: Void->Bool;
   private var _on_stop: Void->Void;
+
+  #if flash
+  private var _thread_state: ThreadState;
+  #end
 
   /**
    * Create a new thread task.
@@ -36,10 +52,15 @@ class ThreadWrapper {
 
     #if (neko || cpp)
     Thread.create(handler);
+    #elseif flash
+    _thread_state = ThreadState.Starting;
+    Lib.current.stage.addEventListener(Event.ENTER_FRAME, handler);
+
     #else
     var thread_pool = new ThreadPool();
     thread_pool.doWork.add(handler);
     thread_pool.queue();
+
     #end
   }
 
@@ -60,6 +81,33 @@ class ThreadWrapper {
   private function handler(test: Dynamic = null) {
   #end
 
+    handlerLogic();
+  }
+
+  private function handlerLogic() {
+    #if flash
+    switch(_thread_state) {
+      case Starting:
+        var success: Bool = true;
+        if(_on_start != null) success = _on_start();
+        if (!success) _thread_state = ThreadState.Finished;
+        _thread_state = ThreadState.Looping;
+
+      case Looping:
+        if (!_active || !_on_loop()) {
+          _thread_state = ThreadState.Closing;
+          return;
+        }
+
+      case Closing:
+        _thread_state = ThreadState.Finished;
+        if (_on_stop != null) _on_stop();
+
+      case Finished:
+        Lib.current.stage.removeEventListener(Event.ENTER_FRAME, handler);
+    }
+
+    #else
     var success: Bool = true;
     if (_on_start != null) success = _on_start();
     if (!success) return;
@@ -75,5 +123,7 @@ class ThreadWrapper {
       if (!_on_loop()) break;
     }
     if (_on_stop != null) _on_stop();
+    #end
   }
+
 }

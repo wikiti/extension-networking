@@ -56,7 +56,9 @@ class Client {
 
     _uuid = uuid;
     _mutex = new MutexWrapper();
+    trace('pre');
     _thread = new ThreadWrapper(threadCreate, threadListen, threadClose);
+    trace('post');
   }
 
   /**
@@ -118,14 +120,14 @@ class Client {
 
   // Listener thread
   private function threadListen(): Bool {
-    //try {
+    try {
       info.read();
-    //}
-    //catch (e: Dynamic) {
-    //  NetworkLogger.error(e);
-    //  _disconnected_message = 'Connection lost: ${e}';
-      //return false;
-    //}
+    }
+    catch (e: Dynamic) {
+      NetworkLogger.error(e);
+      _disconnected_message = 'Connection lost: ${e}';
+      return false;
+    }
 
     return true;
   }

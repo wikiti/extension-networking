@@ -4,7 +4,7 @@ import haxe.io.Bytes;
 import networking.sessions.server.Server.PortType;
 import networking.utils.NetworkLogger;
 
-#if (cpp)
+#if (neko || cpp)
 import sys.net.Socket;
 import sys.net.Host;
 #else
@@ -52,7 +52,7 @@ class SocketWrapper {
    */
   public function connect(host: String, port: PortType) {
     // TODO: Neko
-    #if (cpp)
+    #if (neko || cpp)
     try {
       _socket.connect(new Host(host), port);
       onConnect(null);
@@ -104,7 +104,7 @@ class SocketWrapper {
    * @return Accepted socket.
    */
   public function accept(): SocketWrapper {
-    #if (cpp)
+    #if (neko || cpp)
     var sk = _socket.accept();
     if (sk != null)
       return new SocketWrapper(sk);
@@ -123,7 +123,7 @@ class SocketWrapper {
    * @param connections Max pending requests until they get refused.
    */
   public function listen(connections: Int) {
-    #if (cpp)
+    #if (neko || cpp)
     _socket.listen(connections);
     #else
     throw 'Method not available in non-native targets.';
@@ -138,7 +138,7 @@ class SocketWrapper {
    * @param port Port to bind.
    */
   public function bind(host: String, port: PortType) {
-    #if (cpp)
+    #if (neko || cpp)
     _socket.bind(new Host(host), port);
     #else
     throw 'Method not available in non-native targets.';
@@ -152,7 +152,7 @@ class SocketWrapper {
    * @return A string.
    */
   public function read(): String {
-    #if !(cpp)
+    #if !(neko || cpp)
     if(!connected || (_socket.connected && _socket.bytesAvailable == 0)) return null;
     if(!_socket.connected) throw 'Disconnected from server';
     #end
@@ -166,7 +166,7 @@ class SocketWrapper {
    * @param data String to write into the buffer.
    */
   public function write(data: String) {
-    #if !(cpp)
+    #if !(neko || cpp)
     if (!connected || !_socket.connected) {
       return;
     }
@@ -184,7 +184,7 @@ class SocketWrapper {
    * @param offset
    */
   public function writeBytes(buffer: Bytes, length: Int, offset: Int = 0) {
-    #if (cpp)
+    #if (neko || cpp)
     return _socket.output.writeBytes(buffer, offset, length);
     #else
     throw 'Method not implemented in non native targets.';
@@ -197,7 +197,7 @@ class SocketWrapper {
    * @return A string that represents the socket.
    */
   public function toString(): String {
-    #if (cpp)
+    #if (neko || cpp)
     var peer = _socket.peer();
     return '${peer.host}:${peer.port}';
     #else
@@ -207,7 +207,7 @@ class SocketWrapper {
 
   // Flush output content.
   private function flush() {
-    #if (cpp)
+    #if (neko || cpp)
     _socket.output.flush();
     #else
     _socket.flush();
@@ -216,7 +216,7 @@ class SocketWrapper {
 
   // Write 2 bytes as an unsigned integer.
   private function writeUnsignedInt16(x: UInt) {
-    #if (cpp)
+    #if (neko || cpp)
     _socket.output.writeByte((x >> 8) & 0xFF);
     _socket.output.writeByte(x & 0xFF);
     #else
@@ -231,7 +231,7 @@ class SocketWrapper {
 
     writeUnsignedInt16(s.length);
 
-    #if (cpp)
+    #if (neko || cpp)
     _socket.output.writeString(s);
     #else
     _socket.writeUTFBytes(s);
@@ -240,7 +240,7 @@ class SocketWrapper {
 
   // Read 2 bytes as an unsigned integer.
   private function readUnsignedInt16(): UInt {
-    #if (cpp)
+    #if (neko || cpp)
     var byte1: Int = _socket.input.readByte() & 0xFF;
     var byte2: Int = _socket.input.readByte() & 0xFF;
     #else
@@ -255,7 +255,7 @@ class SocketWrapper {
   private function readString(): String {
     var len: UInt = readUnsignedInt16();
 
-    #if (cpp)
+    #if (neko || cpp)
     return _socket.input.readString(len);
     #else
     return _socket.readUTFBytes(len);
