@@ -105,7 +105,6 @@ class Client {
     _disconnected_message = '';
 
     if (flash_policy_file_url != null) {
-      trace("Setting url for: " + flash_policy_file_url);
       Security.allowDomain("*");
       Security.loadPolicyFile(flash_policy_file_url);
     }
