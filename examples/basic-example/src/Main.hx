@@ -48,7 +48,7 @@ class Main extends Sprite {
     var client_button_wrapper = new Sprite();
     client_button_wrapper.addEventListener(MouseEvent.CLICK, function(e: MouseEvent) {
       e.stopPropagation();
-      runClient(); // <-- Run server with a button click.
+      runClient(); // <-- Run client with a button click.
     });
     client_button_wrapper.addChild(client_button);
     this.addChild(client_button_wrapper);
@@ -60,7 +60,7 @@ class Main extends Sprite {
     var server_button_wrapper = new Sprite();
     server_button_wrapper.addEventListener(MouseEvent.CLICK, function(e: MouseEvent) {
       e.stopPropagation();
-      runServer(); // <-- Run client with a button click.
+      runServer(); // <-- Run server with a button click.
     });
     server_button_wrapper.addChild(server_button);
     this.addChild(server_button_wrapper);
@@ -77,7 +77,7 @@ class Main extends Sprite {
     this.addChild(cube);
 
     // Create the server...
-    var server = Network.registerSession(NetworkMode.SERVER, { ip: '0.0.0.0', port: '8888' });
+    var server = Network.registerSession(NetworkMode.SERVER, { ip: '0.0.0.0', port: 8888, flash_policy_file_port: 9999 });
 
       // ... add some event listeners...
 
@@ -117,7 +117,7 @@ class Main extends Sprite {
     this.addChild(cube);
 
       // Create the client...
-    var client = Network.registerSession(NetworkMode.CLIENT, { ip: '127.0.0.1', port: '8888' });
+    var client = Network.registerSession(NetworkMode.CLIENT, { ip: '127.0.0.1', port: 8888, flash_policy_file_url: 'http://127.0.0.1:9999/crossdomain.xml' });
 
       // ... add some event listeners...
 

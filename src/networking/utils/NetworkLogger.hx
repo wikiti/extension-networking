@@ -2,6 +2,10 @@ package networking.utils;
 
 import haxe.CallStack;
 
+#if flash
+import flash.external.ExternalInterface;
+#end
+
 /**
  * Network log levels.
  *
@@ -12,7 +16,7 @@ import haxe.CallStack;
   var Info = "INFO";
 
   /** Event level. **/
-  var Event = "EVENT";
+  var EventLog = "EVENT";
 
   /** Error level. **/
   var Error = "ERROR";
@@ -46,7 +50,7 @@ class NetworkLogger {
    * @param event Network event to log.
    */
   public static inline function event(event: NetworkEvent) {
-    log('${event.type} -- ${event.netData}', NetworkLogLevel.Event);
+    log('${event.type} -- ${event.netData}', NetworkLogLevel.EventLog);
   }
 
   /**
@@ -58,6 +62,11 @@ class NetworkLogger {
   public static inline function log(msg: String, level:NetworkLogLevel = NetworkLogLevel.Info) {
     #if (network_logging || network_logging_with_backtrace)
     trace('# NETWORK $level -- $ -- $msg');
+
+    #if flash
+    try { ExternalInterface.call("console.log", '# NETWORK $level -- $ -- $msg'); }
+    catch(e: Dynamic) {}
+    #end
     #end
   }
 }

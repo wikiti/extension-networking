@@ -90,8 +90,8 @@ class Session extends EventDispatcher {
     params = params != null ? params : { };
 
     switch(mode) {
-      case SERVER: network_item = new Server(this, params.uuid, params.ip, Std.parseInt(params.port), params.max_connections);
-      case CLIENT: network_item = new Client(this, params.uuid, params.ip, Std.parseInt(params.port));
+      case SERVER: network_item = new Server(this, params.uuid, params.ip, Std.parseInt(params.port), params.max_connections, params.flash_policy_file_port);
+      case CLIENT: network_item = new Client(this, params.uuid, params.ip, Std.parseInt(params.port), params.flash_policy_file_url);
     }
 
     return this;
@@ -210,6 +210,7 @@ class Session extends EventDispatcher {
     addEventListener(NetworkEvent.MESSAGE_BROADCAST, debugEvent);
     addEventListener(NetworkEvent.MESSAGE_BROADCAST_FAILED, debugEvent);
     addEventListener(NetworkEvent.SERVER_FULL, debugEvent);
+    addEventListener(NetworkEvent.SECURITY_ERROR, debugEvent);
 
     #if !test
     addEventListener(NetworkEvent.MESSAGE_RECEIVED, handleCoreReceivedMessage);

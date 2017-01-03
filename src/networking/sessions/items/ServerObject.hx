@@ -49,9 +49,11 @@ class ServerObject extends ClientObject {
    *
    * @param ip Ip host to bind into.
    * @param port Port to bind.
+   * @param on_connect Unused parameter.
+   * @param on_failure Unused parameter.
    * @return true if the socket was created, false otherwise.
    */
-  override public function initializeSocket(ip: String, port: PortType): Bool {
+  override public function initializeSocket(ip: String, port: PortType, on_connect: Dynamic->Void = null, on_failure: Dynamic->Void = null): Bool {
     if (socket != null) return false;
 
     socket = new SocketWrapper();

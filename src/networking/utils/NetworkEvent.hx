@@ -48,6 +48,9 @@ class NetworkEvent extends Event {
   /** Server is full. Server: a client tryed to connect to the server (full); Client: tried to connect into a full server. **/
   public static inline var SERVER_FULL: String = "NETWORK_EVENT_SERVER_FULL";
 
+  /** Security errors. Related to flash clients. **/
+  public static inline var SECURITY_ERROR: String = "NETWORK_EVENT_SECURITY_ERROR";
+
   /** Event data. A simple haxe object. **/
   public var netData(default, null): Dynamic;
 

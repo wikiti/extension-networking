@@ -6,12 +6,13 @@ import networking.utils.NetworkLogger;
 import networking.sessions.Session;
 import networking.sessions.items.ClientObject;
 import networking.sessions.items.ServerObject;
+import networking.sessions.server.FlashPolicyServer;
 import networking.utils.*;
 
 import networking.wrappers.*;
 
 /** Port type (integer). **/
-typedef PortType = Int;
+typedef PortType = Null<Int>;
 
 /** Clients list (array of ClientObjects). **/
 typedef Clients = Array<ClientObject>;
@@ -36,6 +37,9 @@ class Server {
   /** Default session identifier (random). Used in the constructor. **/
   public static inline var DEFAULT_UUID: String = null;
 
+  /** Flag to allow flash clients. Setting this value to a numeric port will create a FlashPolicyServer object on that port. **/
+  public static inline var FLASH_POLICY_FILE_PORT: PortType = null;
+
   /** Max allowed connection pending requests. This value is hard-coded and should not be modified. **/
   public static inline var MAX_LISTEN_INCOMING_REQUESTS: Int = 200;
 
@@ -54,10 +58,14 @@ class Server {
   /** Max allowed clients. **/
   public var max_connections(default, null): Int;
 
+  /** Flash-clients related. This property is used to setup a flash policy file server on the specified port. If no port is specified, then the file policy server will not be created. **/
+  public var flash_policy_file_port(default, null): PortType;
+
   private var _session: Session;
   private var _mutex: MutexWrapper;
   private var _uuid: Uuid;
   private var _thread: ThreadWrapper;
+  private var _policy_server: FlashPolicyServer;
 
   /**
    * Create a new server session that will bind the given ip and port.
@@ -69,21 +77,24 @@ class Server {
    * @param port Server port to connect into.
    * @param max_connections Max allowed clients at the same time.
    */
-  public function new(session: Session, uuid: Uuid = DEFAULT_UUID, ip: String = DEFAULT_IP, port: Null<PortType> = DEFAULT_PORT, max_connections: Null<Int> = DEFAULT_MAX_CONNECTIONS) {
-    #if !(cpp || neko)
-    throw 'Server mode is not available in non-native targets.';
-    #end
+  public function new(session: Session, uuid: Uuid = DEFAULT_UUID, ip: String = DEFAULT_IP, port: PortType = DEFAULT_PORT, max_connections: Null<Int> = DEFAULT_MAX_CONNECTIONS,
+      flash_policy_file_port: PortType = FLASH_POLICY_FILE_PORT) {
 
     _session = session;
     _mutex = new MutexWrapper();
     _uuid = uuid;
 
     try {
+      #if !(cpp || neko)
+      throw 'Server mode is not available in non-native targets.';
+      #end
+
       info = new ServerObject(_session, _uuid, this);
       info.initializeSocket(ip, port);
     }
     catch (e: Dynamic) {
       _session.triggerEvent(NetworkEvent.INIT_FAILURE, { server: this, message: 'Could not bind to $ip:$port. Ensure that no server is running on that port. Reason: $e' } );
+      info = null;
       return;
     }
 
@@ -92,9 +103,15 @@ class Server {
     this.ip = ip;
     this.port = port;
     this.max_connections = max_connections;
+    this.flash_policy_file_port = flash_policy_file_port;
 
     clients = [];
     _thread = new ThreadWrapper(null, threadLoop, null);
+
+    if (this.flash_policy_file_port != null) {
+      _policy_server = new FlashPolicyServer(this, flash_policy_file_port);
+      _policy_server.run();
+    }
   }
 
   /**
@@ -142,13 +159,16 @@ class Server {
    */
   public function stop() {
     if (_thread != null) _thread.stop();
+    if (_policy_server != null) _policy_server.stop();
+
     _mutex.acquire();
     cleanup();
     _mutex.release();
-    _session.triggerEvent(NetworkEvent.CLOSED, { server: this, message: 'Session closed.' } );
+    if(info != null) _session.triggerEvent(NetworkEvent.CLOSED, { server: this, message: 'Session closed.' } );
 
     _thread = null;
     _mutex = null;
+    _policy_server = null;
   }
 
   /**
@@ -157,6 +177,15 @@ class Server {
    */
   public inline function send(obj: Dynamic) {
     broadcast(obj);
+  }
+
+  /**
+   * Retrieves the related session to the server.
+   *
+   * @return A `Session` object related to this server.
+   */
+  public inline function session(): Session {
+    return _session;
   }
 
   // Accepts new sockets and spawns new threads for them.

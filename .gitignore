@@ -1,3 +1,5 @@
+_local/
 bin/
 build/
 extension-networking.hxproj
+publish.zip
