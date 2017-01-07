@@ -63,7 +63,7 @@ class NetworkLogger {
     #if (network_logging || network_logging_with_backtrace)
     trace('# NETWORK $level -- $ -- $msg');
 
-    #if flash
+    #if (flash || html5)
     try { ExternalInterface.call("console.log", '# NETWORK $level -- $ -- $msg'); }
     catch(e: Dynamic) {}
     #end

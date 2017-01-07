@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<project>
+  <section if="html5">
+    <haxelib name="swf"/>
+    <library path="dev/flashsocket.swf" preload="true" id="flashsocket" generate="true" />
+  </section>
+</project>

@@ -7,6 +7,12 @@ import networking.utils.NetworkLogger;
 #if (neko || cpp)
 import sys.net.Socket;
 import sys.net.Host;
+
+#elseif html5
+import js.XMLSocket;
+import openfl.events.*;
+typedef Socket = XMLSocket;
+
 #else
 import openfl.events.*;
 import openfl.net.Socket;
@@ -32,6 +38,9 @@ class SocketWrapper {
 
   private var _socket: Socket;
 
+  private var _host: String;
+  private var _port: PortType;
+
   /**
    * Create a new socket.
    *
@@ -40,8 +49,13 @@ class SocketWrapper {
   public function new(data: Dynamic = null) {
     if (data != null)
       _socket = data;
-    else
+    else {
+      #if html5
+      _socket = new Socket("flashsocket");
+      #else
       _socket = new Socket();
+      #end
+    }
 
     connected = false;
   }
@@ -53,6 +67,9 @@ class SocketWrapper {
    * @param port Port to connect to.
    */
   public function connect(host: String, port: PortType) {
+    _host = host;
+    _port = port;
+
     #if (neko || cpp)
     try {
       _socket.connect(new Host(host), port);
@@ -63,6 +80,13 @@ class SocketWrapper {
       onFailure(e);
       connected = false;
     }
+    #elseif html5
+    trace("Connected!");
+    _socket.connect(host, port);
+
+    // TODO: Add callbacks
+    // TODO: Setup a queue for readed messages.
+
     #else
 
     var on_connect_handler: Dynamic->Void = function(e: Dynamic) {
@@ -95,7 +119,7 @@ class SocketWrapper {
    * Close the client or server socket.
    */
   public function close() {
-    #if !(cpp || neko)
+    #if !(cpp || neko || html5)
     if (!_socket.connected) return;
     #end
 
@@ -161,12 +185,18 @@ class SocketWrapper {
    * @return A string.
    */
   public function read(): String {
+    #if html5
+    // TODO: Setup a queue, or sumthing.
+
+    return null;
+    #else
     #if !(neko || cpp)
     if(!connected || (_socket.connected && _socket.bytesAvailable == 0)) return null;
     if(!_socket.connected) throw 'Disconnected from server';
     #end
 
     return readString();
+    #end
   }
 
   /**
@@ -175,6 +205,10 @@ class SocketWrapper {
    * @param data String to write into the buffer.
    */
   public function write(data: String) {
+    #if html5
+    _socket.send(data);
+    #else
+
     #if !(neko || cpp)
     if (_socket == null) return;
     if (!connected || !_socket.connected) throw 'Connection not established.';
@@ -182,6 +216,8 @@ class SocketWrapper {
 
     writeString(data);
     flush();
+
+    #end
   }
 
   /**
@@ -209,10 +245,14 @@ class SocketWrapper {
     #if (neko || cpp)
     var peer = _socket.peer();
     return '${peer.host}:${peer.port}';
+    #elseif html5
+    return 'flashsocket ${_host}:${_port}';
     #else
     return _socket.toString();
     #end
   }
+
+  #if !html5
 
   // Flush output content.
   private function flush() {
@@ -271,4 +311,6 @@ class SocketWrapper {
     return _socket.readUTFBytes(len);
     #end
   }
+
+  #end
 }

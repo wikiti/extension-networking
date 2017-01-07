@@ -97,11 +97,6 @@ class Client {
   }
 
   private function threadCreate(): Bool {
-    #if html5
-    _session.triggerEvent(NetworkEvent.INIT_FAILURE, { message: 'HTML5 is not a supported target.' });
-    return false;
-    #end
-
     _disconnected_message = '';
 
     if (flash_policy_file_url != null) {

@@ -8,7 +8,7 @@ import cpp.vm.Thread;
 import lime.system.ThreadPool;
 #end
 
-#if flash
+#if (flash || html5)
 import openfl.Lib;
 import openfl.events.Event;
 
@@ -32,7 +32,7 @@ class ThreadWrapper {
   private var _on_loop: Void->Bool;
   private var _on_stop: Void->Void;
 
-  #if flash
+  #if (flash || html5)
   private var _thread_state: ThreadState;
   #end
 
@@ -52,7 +52,7 @@ class ThreadWrapper {
 
     #if (neko || cpp)
     Thread.create(handler);
-    #elseif flash
+    #elseif (flash || html5)
     _thread_state = ThreadState.Starting;
     Lib.current.stage.addEventListener(Event.ENTER_FRAME, handler);
 
@@ -85,7 +85,7 @@ class ThreadWrapper {
   }
 
   private function handlerLogic() {
-    #if flash
+    #if (flash || html5)
     switch(_thread_state) {
       case Starting:
         var success: Bool = true;
