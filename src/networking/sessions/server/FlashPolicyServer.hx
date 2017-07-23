@@ -57,13 +57,14 @@ class FlashPolicyServer {
     throw 'FlashPolicy Server is not available in non-native targets.';
     #end
 
-    _thread = new ThreadWrapper(startServer, loopServer, stopServer);
+    _thread = new ThreadWrapper(startServer, loopServer, null);
   }
 
   /**
    * Stop the flash policy file server.
    */
   public function stop() {
+    _socket.close();
     _thread.stop();
   }
 
@@ -106,9 +107,5 @@ class FlashPolicyServer {
     }
 
     return true;
-  }
-
-  private function stopServer() {
-    _socket.close();
   }
 }

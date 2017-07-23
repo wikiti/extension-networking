@@ -31,6 +31,7 @@ class SocketWrapper {
   public var connected: Bool;
 
   private var _socket: Socket;
+  private var _is_server: Bool;
 
   /**
    * Create a new socket.
@@ -44,6 +45,7 @@ class SocketWrapper {
       _socket = new Socket();
 
     connected = false;
+    _is_server = false;
   }
 
   /**
@@ -89,6 +91,8 @@ class SocketWrapper {
 
     _socket.connect(host, port);
     #end
+
+    _is_server = false;
   }
 
   /**
@@ -152,6 +156,8 @@ class SocketWrapper {
     #else
     throw 'Method not available in non-native targets.';
     #end
+
+    _is_server = true;
   }
 
   /**
@@ -206,12 +212,24 @@ class SocketWrapper {
    * @return A string that represents the socket.
    */
   public function toString(): String {
-    #if (neko || cpp)
-    var peer = _socket.peer();
-    return '${peer.host}:${peer.port}';
-    #else
-    return _socket.toString();
-    #end
+    try {
+      #if (neko || cpp)
+      if (_is_server) {
+        var host = _socket.host();
+        return '${host.host}:${host.port}';
+      }
+      else {
+        var peer = _socket.peer();
+        return '${peer.host}:${peer.port}';
+      }
+      #else
+      return _socket.toString();
+      #end
+    }
+    catch (e: Dynamic) {
+      NetworkLogger.error(e);
+      return '?:?';
+    }
   }
 
   // Flush output content.
