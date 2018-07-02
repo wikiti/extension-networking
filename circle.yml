@@ -19,6 +19,8 @@ dependencies:
     - haxelib install hamcrest
     - haxelib install openfl
     - haxelib install lime
+    - haxelib install munit 2.1.2
+    - haxelib set munit 2.1.2
     - haxelib dev extension-networking .
     - sudo ln -s /usr/lib/libneko.so.2 /usr/lib/libneko.so
 
