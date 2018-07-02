@@ -48,6 +48,36 @@ To run tests use [munit](https://github.com/massiveinteractive/MassiveUnit):
 $ haxelib run munit test
 ```
 
+## Publish
+
+Update the haxelib version on `haxelib.json` and commit the changes to `master`,
+and push the changes:
+
+```sh
+# Update haxelib.json
+git commit -m "Update version"
+git push origin master
+```
+
+Create a git tag with the current version and push it:
+
+```sh
+git tag x.y.z
+git push origin x.y.z
+```
+
+Compress the repository:
+
+```sh
+git archive -o publish.zip HEAD
+```
+
+And publish the haxelib:
+
+```sh
+haxelib submit publish.zip
+```
+
 ## TODO
 
 - Add more unit tests related to sockets.
