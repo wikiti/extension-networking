@@ -121,7 +121,7 @@ class Session extends EventDispatcher {
     switch(mode) {
       case SERVER:
         if (network_item == null || cl == null) return;
-        network_item.disconnectClient(cl);
+        cast(network_item, Server).disconnectClient(cl);
 
       case CLIENT:
         if (network_item == null) return;
