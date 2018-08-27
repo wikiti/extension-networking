@@ -13,38 +13,38 @@ class NetworkTest {
   }
 
   @Test
-	public function testRegisterClientSession() {
+  public function testRegisterClientSession() {
     var session = Network.registerSession(NetworkMode.CLIENT);
 
     Assert.isNotNull(session);
-    Assert.areSame(Network.sessions.length, 1);
-    Assert.areSame(session, Network.sessions[0]);
-	}
+    Assert.areEqual(Network.sessions.length, 1);
+    Assert.areEqual(session, Network.sessions[0]);
+  }
 
   @Test
-	public function testRegisterServerSession() {
+  public function testRegisterServerSession() {
     var session = Network.registerSession(NetworkMode.SERVER);
 
     Assert.isNotNull(session);
-    Assert.areSame(Network.sessions.length, 1);
-    Assert.areSame(session, Network.sessions[0]);
-	}
+    Assert.areEqual(Network.sessions.length, 1);
+    Assert.areEqual(session, Network.sessions[0]);
+  }
 
   @Test
-	public function testDestroyClientSession() {
+  public function testDestroyClientSession() {
     var session = Network.registerSession(NetworkMode.CLIENT);
-    Assert.areSame(Network.sessions.length, 1);
+    Assert.areEqual(Network.sessions.length, 1);
 
     Assert.isFalse(Network.destroySession(session, false));
-    Assert.areSame(Network.sessions.length, 0);
-	}
+    Assert.areEqual(Network.sessions.length, 0);
+  }
 
   @Test
-	public function testDestroyServerSession() {
+  public function testDestroyServerSession() {
     var session = Network.registerSession(NetworkMode.SERVER);
-    Assert.areSame(Network.sessions.length, 1);
+    Assert.areEqual(Network.sessions.length, 1);
 
     Assert.isFalse(Network.destroySession(session, false));
-    Assert.areSame(Network.sessions.length, 0);
-	}
+    Assert.areEqual(Network.sessions.length, 0);
+  }
 }

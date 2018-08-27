@@ -15,17 +15,17 @@ import NetworkSerializerTest;
  */
 class TestSuite extends massive.munit.TestSuite
 {
-	public function new()
-	{
-		super();
+  public function new()
+  {
+    super();
 
-		add(NetworkLoggerTest);
-		add(NetworkEventsQueueTest);
-		add(SessionTest);
-		add(UtilsTest);
-		add(NetworkEventTest);
-		add(NetworkMessageTest);
-		add(NetworkTest);
-		add(NetworkSerializerTest);
-	}
+    add(NetworkLoggerTest);
+    add(NetworkEventsQueueTest);
+    add(SessionTest);
+    add(UtilsTest);
+    add(NetworkEventTest);
+    add(NetworkMessageTest);
+    add(NetworkTest);
+    add(NetworkSerializerTest);
+  }
 }

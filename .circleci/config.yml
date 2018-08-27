@@ -1,0 +1,22 @@
+version: 2
+jobs:
+  build:
+    docker:
+    - image: wikiti/openfl-test:0.2
+      environment:
+        AUDIODEV: null
+    working_directory: ~/extension-networking
+    steps:
+      - checkout
+      - run: mkdir -p test/build examples/basic-example/bin
+      - run: haxelib dev extension-networking ~/extension-networking
+      - run: echo `pwd`
+      - run:
+          name: Run munit tests
+          command: haxelib run munit test
+      - run:
+          name: Build basic example
+          command: haxelib run openfl build examples/basic-example/project.xml neko
+      - run:
+          name: Build tic-tac-toe example
+          command: haxelib run openfl build examples/tic-tac-toe/project.xml neko
