@@ -1,0 +1,53 @@
+version: 2
+jobs:
+  build:
+    docker:
+    - image: wikiti/openfl-test:0.0
+      environment:
+        AUDIODEV: null
+    working_directory: ~/extension-networking
+    steps:
+      - checkout
+      - run: mkdir -p test/build examples/basic-example/bin
+      - run: haxelib dev extension-networking
+      - run:
+          name: Run munit tests
+          command:  haxelib run munit test
+      - run:
+          name: Build basic example
+          command: haxelib run openfl build examples/basic-example/project.xml neko
+      - run:
+          name: Build tic-tac-toe example
+          command: haxelib run openfl build examples/tic-tac-toe/project.xml neko
+
+# machine:
+#   environment:
+#     AUDIODEV:                null
+#
+# dependencies:
+#   cache_directories:
+#     - test/build
+#
+#   pre:
+#     - mkdir -p test/build examples/basic-example/bin
+#     - sudo add-apt-repository ppa:haxe/releases -y
+#     - sudo apt-get update
+#     - sudo apt-get install haxe -y --force-yes
+#     - sudo apt-get install g++-multilib gcc-multilib
+#     - sudo apt-get install mesa-common-dev libgl1-mesa-dev libglu1-mesa-dev -y
+#     - mkdir ~/haxelib
+#     - haxelib setup ~/haxelib
+#     - haxelib install mcover
+#     - haxelib install hamcrest
+#     - haxelib install openfl
+#     - haxelib install lime
+#     - haxelib install munit 2.1.2
+#     - haxelib set munit 2.1.2
+#     - haxelib dev extension-networking .
+#     - sudo ln -s /usr/lib/libneko.so.2 /usr/lib/libneko.so
+#
+# test:
+#   override:
+#     - haxelib run munit test
+#     - haxelib run openfl build examples/basic-example/project.xml neko
+#     - haxelib run openfl build examples/tic-tac-toe/project.xml neko
