@@ -10,7 +10,7 @@ class NetworkMessageTest {
     var data = { data: 'data' };
     var msg = NetworkMessage.createRaw(null, null, data);
 
-    Assert.areSame(msg.data, data);
+    Assert.areEqual(msg.data, data);
   }
 
   @Test
@@ -31,6 +31,6 @@ class NetworkMessageTest {
     var parsed = NetworkMessage.parse(msg);
 
     Assert.isType(parsed, Dynamic);
-    Assert.areSame(parsed.data, data.data);
+    Assert.areEqual(parsed.data, data.data);
   }
 }

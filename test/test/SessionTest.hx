@@ -9,42 +9,42 @@ import networking.utils.NetworkMode;
 
 class SessionTest {
   @Test
-	public function testServerCreation() {
+  public function testServerCreation() {
     var params = { ip: '0.0.0.0', port: 9999, max_connections: 4, uuid: 'server_test_id' };
     var session = new Session(NetworkMode.SERVER, params);
 
     Assert.isNotNull(session);
     session.start();
 
-    Assert.areSame(session.mode, NetworkMode.SERVER);
-    Assert.areSame(session.params, params);
+    Assert.areEqual(session.mode, NetworkMode.SERVER);
+    Assert.areEqual(session.params, params);
     Assert.isNotNull(session.network_item);
     Assert.isType(session.network_item, Server);
 
     session.stop();
-	}
+  }
 
   @Test
-	public function testClientCreation() {
+  public function testClientCreation() {
     var params = { ip: '0.0.0.0', port: 9999, max_connections: 4, uuid: 'server_test_id' };
     var session = new Session(NetworkMode.CLIENT, params);
 
     Assert.isNotNull(session);
     session.start();
 
-    Assert.areSame(session.mode, NetworkMode.CLIENT);
-    Assert.areSame(session.params, params);
+    Assert.areEqual(session.mode, NetworkMode.CLIENT);
+    Assert.areEqual(session.params, params);
     Assert.isNotNull(session.network_item);
     Assert.isType(session.network_item, Client);
-	}
+  }
 
   @Test
   public function testTriggerEvent() {
     var params = { ip: '0.0.0.0', port: 9999, max_connections: 4, uuid: 'server_test_id' };
     var session = new Session(NetworkMode.CLIENT, params);
 
-    Assert.areSame(session.eventsQueue().length(), 0);
+    Assert.areEqual(session.eventsQueue().length(), 0);
     session.triggerEvent(NetworkEvent.INIT_SUCCESS, {});
-    Assert.areSame(session.eventsQueue().length(), 1);
+    Assert.areEqual(session.eventsQueue().length(), 1);
   }
 }

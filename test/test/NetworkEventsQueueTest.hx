@@ -10,7 +10,7 @@ import networking.utils.NetworkMode;
 
 class NetworkEventsQueueTest {
   @Test
-	public function testAsyncEventQueue() {
+  public function testAsyncEventQueue() {
     var dispatchedEvents = new Array<NetworkEvent>();
     var session = Network.registerSession(NetworkMode.SERVER);
     var queue = new NetworkEventsQueue(session);
@@ -24,17 +24,17 @@ class NetworkEventsQueueTest {
     session.addEventListener(NetworkEvent.MESSAGE_SENT, function(event: NetworkEvent) { dispatchedEvents.push(event); });
 
     Assert.isNotNull(session);
-    Assert.areSame(dispatchedEvents.length, 0);
+    Assert.areEqual(dispatchedEvents.length, 0);
 
     queue.handleQueuedEvents();
 
-    Assert.areSame(dispatchedEvents.length, 3);
-    Assert.areSame(dispatchedEvents[0].type, NetworkEvent.INIT_SUCCESS);
-    Assert.areSame(dispatchedEvents[1].type, NetworkEvent.MESSAGE_RECEIVED);
-    Assert.areSame(dispatchedEvents[2].type, NetworkEvent.MESSAGE_SENT);
+    Assert.areEqual(dispatchedEvents.length, 3);
+    Assert.areEqual(dispatchedEvents[0].type, NetworkEvent.INIT_SUCCESS);
+    Assert.areEqual(dispatchedEvents[1].type, NetworkEvent.MESSAGE_RECEIVED);
+    Assert.areEqual(dispatchedEvents[2].type, NetworkEvent.MESSAGE_SENT);
 
-    Assert.areSame(dispatchedEvents[0].netData.test, 'a');
-    Assert.areSame(dispatchedEvents[1].netData.test, 'b');
-    Assert.areSame(dispatchedEvents[2].netData.test, 'c');
-	}
+    Assert.areEqual(dispatchedEvents[0].netData.test, 'a');
+    Assert.areEqual(dispatchedEvents[1].netData.test, 'b');
+    Assert.areEqual(dispatchedEvents[2].netData.test, 'c');
+  }
 }

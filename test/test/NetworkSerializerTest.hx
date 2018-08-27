@@ -15,6 +15,6 @@ class NetworkSerializerTest {
     var parsed = NetworkSerializer.unserialize(msg);
 
     Assert.isType(parsed, Dynamic);
-    Assert.areSame(parsed.data, data.data);
+    Assert.areEqual(parsed.data, data.data);
   }
 }
