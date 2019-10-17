@@ -1,24 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
 <project>
-	<!-- metadata, make sure 'package' is at least 3 segments (ie. com.mycompany.myproject) -->
-	<meta title="tic-tac-toe" package="tic-tac-toe" version="1.0.0" company="" />
+  <!-- metadata, make sure 'package' is at least 3 segments (ie. com.mycompany.myproject) -->
+  <meta title="tictactoe" package="es.danielherzog.tictactoe" version="1.0.0" company="" />
 
-	<!-- output -->
-	<app main="Main" file="tic-tac-toe" path="bin" />
+  <!-- output -->
+  <app main="Main" file="tictactoe" path="bin" />
 
-	<window background="#000000" fps="60" />
-	<window orientation="landscape" vsync="false" antialiasing="0" width="460" height="460" />
+  <window background="#000000" fps="60" />
+  <window orientation="landscape" vsync="false" antialiasing="0" width="460" height="460" />
 
-	<!-- classpath, haxe libs -->
-	<source path="src" />
+  <!-- classpath, haxe libs -->
+  <source path="src" />
 
-	<haxelib name="openfl" />
+  <haxelib name="openfl" />
   <haxelib name="extension-networking" />
 
-	<!-- assets -->
-	<icon path="assets/openfl.svg" />
-	<assets path="assets/img" rename="img" />
+  <!-- assets -->
+  <icon path="assets/openfl.svg" />
+  <assets path="assets/img" rename="img" />
 
   <!-- other -->
   <haxedef name="network_logging" />
+  <architecture name="x86" if="android" />
 </project>

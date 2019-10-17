@@ -33,13 +33,13 @@ The networking content is inside the [src/Game.hx](src/Game.hx) file. It is well
 Open a terminal within the example folder, and run:
 
 ````sh
-$ lime build <linux|windows|...>
+$ openfl build <linux|windows|...>
 ````
 
 After that, you can run it with:
 
 ````sh
-$ lime run <linux|windows|...>
+$ openfl run <linux|windows|...>
 ````
 
 Run it twice in two different terminals; create a server and a client, click the screen on any window, and check the output!

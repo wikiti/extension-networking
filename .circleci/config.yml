@@ -2,7 +2,7 @@ version: 2
 jobs:
   build:
     docker:
-    - image: wikiti/openfl-test:0.2
+    - image: wikiti/openfl-test:0.3
       environment:
         AUDIODEV: null
     working_directory: ~/extension-networking

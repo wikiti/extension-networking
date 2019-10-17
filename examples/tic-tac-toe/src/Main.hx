@@ -12,7 +12,7 @@ class Main extends Sprite {
    * Run our game!
    */
   public function new() {
-		super();
+    super();
 
     // Order is important! Background, foreground and UI.
     addChild(Board.getInstance());
@@ -21,5 +21,5 @@ class Main extends Sprite {
 
     // Show the main menu.
     Menu.getInstance().show();
-	}
+  }
 }

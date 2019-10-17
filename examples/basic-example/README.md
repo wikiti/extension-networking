@@ -27,13 +27,13 @@ The main content is inside the [src/Main.hx](src/Main.hx) file. It is well docum
 Open a terminal within the example folder, and run:
 
 ````sh
-$ lime build <linux|windows|...>
+$ openfl build <linux|windows|...>
 ````
 
 After that, you can run it with:
 
 ````sh
-$ lime run <linux|windows|...>
+$ openfl run <linux|windows|...>
 ````
 
 Run it twice in two different terminals; create a server and a client, click the screen on any window, and check the output!

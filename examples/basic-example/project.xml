@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <project>
   <!-- metadata, make sure 'package' is at least 3 segments (ie. com.mycompany.myproject) -->
-  <meta title="basic-example" package="basic-example" version="1.0.0" company="" />
+  <meta title="basicexample" package="es.danielherzog.basicexample" version="1.0.0" company="" />
 
   <!-- output -->
-  <app main="Main" file="basic-example" path="bin" />
+  <app main="Main" file="basicexample" path="bin" />
 
   <window background="#1a1a1a" fps="60" />
   <window orientation="landscape" vsync="false" antialiasing="0" if="cpp" />
@@ -21,4 +21,5 @@
 
   <!-- Show networking logs -->
   <haxedef name="network_logging" />
+  <architecture name="x86" if="android" />
 </project>
