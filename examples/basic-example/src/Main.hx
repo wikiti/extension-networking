@@ -31,7 +31,20 @@ class Main extends Sprite {
    */
   public function new() {
     super();
+
+    trace("Starting basic-example");
     setupMenuButtons();
+
+    for (arg in Sys.args()) {
+      if (arg == "-client") {
+        runClient();
+        break;
+      }
+      else if (arg == "-server") {
+        runServer();
+        break;
+      }
+    }
   }
 
   /**
